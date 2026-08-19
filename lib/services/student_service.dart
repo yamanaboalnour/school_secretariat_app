@@ -2,7 +2,7 @@ import '../models/student_model.dart';
 
 class StudentService {
   static Future<List<Student>> loadStudentsFromCsv() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
     return [
       Student(
         generalId: '1001',
