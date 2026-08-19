@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/student_model.dart';
 import '../services/csv_service.dart';
 import 'dashboard_screen.dart';
-import 'general_register_screen.dart';
+import 'students_list_screen.dart'; // تم تصحيح اسم الملف هنا
 import 'academic_sequence_screen.dart';
 
 class MainMenuScreen extends StatefulWidget {
@@ -128,14 +128,14 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                       // 2. بطاقة السجل العام للطالب
                       _buildMenuCard(
                         title: 'السجل العام للطلاب',
-                        subtitle: 'عرض كامل ملفات الطلاب والبحث في السجل العام',
+                        subtitle: 'عرض كامل ملفات الطلاب، التعديل وطباعة البطاقات',
                         icon: Icons.menu_book_rounded,
                         iconColor: primaryGreen,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => GeneralRegisterScreen(students: _students),
+                              builder: (context) => StudentsListScreen(students: _students),
                             ),
                           );
                         },
