@@ -4,6 +4,8 @@ import '../services/student_service.dart'; // تم التصحيح إلى الخ�
 import 'dashboard_screen.dart';
 import 'students_list_screen.dart';
 import 'academic_sequence_pdf.dart'; // تم التصحيح للواجهة المتاحة
+import 'sequence_log_screen.dart';
+import '../models/sequence_log_model.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({Key? key}) : super(key: key);
@@ -14,6 +16,7 @@ class MainMenuScreen extends StatefulWidget {
 
 class _MainMenuScreenState extends State<MainMenuScreen> {
   List<Student> _students = [];
+  List<SequenceLog> _sequenceLogs = [];
   bool _isLoading = true;
 
   @override

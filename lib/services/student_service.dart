@@ -1,38 +1,35 @@
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:csv/csv.dart';
 import '../models/student_model.dart';
 
 class StudentService {
   static Future<List<Student>> loadStudentsFromCsv() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return [
-      Student(
-        generalId: '1001',
-        fullName: 'أحمد محمد علي',
-        fatherName: 'محمد',
-        motherName: 'فاطمة',
-        birthPlace: 'دمشق',
-        birthDate: '2008-05-15',
-        latestGrade: 'الأول الثانوي',
-        latestStatus: 'ناجح',
-        academicHistory: {
-          '2023-2024': 'السابع الأساسي - ناجح',
-          '2024-2025': 'الثامن الأساسي - ناجح',
-          '2025-2026': 'الأول الثانوي - مستجد',
-        },
-      ),
-      Student(
-        generalId: '1002',
-        fullName: 'عمر خالد الحمصي',
-        fatherName: 'خالد',
-        motherName: 'عائشة',
-        birthPlace: 'حمص',
-        birthDate: '2007-09-20',
-        latestGrade: 'الثاني الثانوي',
-        latestStatus: 'ناجح',
-        academicHistory: {
-          '2024-2025': 'الأول الثانوي - ناجح',
-          '2025-2026': 'الثاني الثانوي - مستجد',
-        },
-      ),
-    ];
+    try {
+      final rawData = await rootBundle.loadString('assets/students.csv');
+      List<List<dynamic>> listData = const CsvToListConverter().convert(rawData);
+
+      List<Student> students = [];
+      // التجاوز عن السطر الأول (Header)
+      for (int i = 1; i < listData.length; i++) {
+        var row = listData[i];
+        if (row.isEmpty || row.length < 2) continue;
+
+        students.add(Student(
+          generalId: row[0].toString(),
+          fullName: row[1].toString(),
+          fatherName: row.length > 2 ? row[2].toString() : '',
+          motherName: row.length > 3 ? row[3].toString() : '',
+          birthPlace: row.length > 4 ? row[4].toString() : '',
+          birthDate: row.length > 5 ? row[5].toString() : '',
+          latestGrade: row.length > 6 ? row[6].toString() : 'غير محدد',
+          latestStatus: row.length > 7 ? row[7].toString() : 'مستجد',
+          academicHistory: {},
+        ));
+      }
+      return students;
+    } catch (e) {
+      print("Error loading CSV: $e");
+      return [];
+    }
   }
 }

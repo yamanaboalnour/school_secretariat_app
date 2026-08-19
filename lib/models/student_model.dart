@@ -16,9 +16,9 @@ class Student {
     required this.motherName,
     required this.birthPlace,
     required this.birthDate,
-    required this.latestGrade,
-    required this.latestStatus,
-    required this.academicHistory,
+    this.latestGrade = 'غير محدد',
+    this.latestStatus = 'مستجد',
+    this.academicHistory = const {},
   });
 
   factory Student.fromMap(Map<String, dynamic> map) {
@@ -29,8 +29,8 @@ class Student {
       motherName: map['motherName'] ?? '',
       birthPlace: map['birthPlace'] ?? '',
       birthDate: map['birthDate'] ?? '',
-      latestGrade: map['latestGrade'] ?? '',
-      latestStatus: map['latestStatus'] ?? '',
+      latestGrade: map['latestGrade'] ?? 'غير محدد',
+      latestStatus: map['latestStatus'] ?? 'مستجد',
       academicHistory: Map<String, String>.from(map['academicHistory'] ?? {}),
     );
   }
