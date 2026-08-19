@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/student_model.dart';
-import '../services/csv_service.dart';
+import '../services/student_service.dart'; // تم التصحيح إلى الخدمة المتاحة
 import 'dashboard_screen.dart';
-import 'students_list_screen.dart'; // تم تصحيح اسم الملف هنا
-import 'academic_sequence_screen.dart';
+import 'students_list_screen.dart';
+import 'academic_sequence_pdf.dart'; // تم التصحيح للواجهة المتاحة
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({Key? key}) : super(key: key);
@@ -24,7 +24,8 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
   Future<void> _loadData() async {
     try {
-      final studentsData = await CsvService.loadStudentsData();
+      // استخدام StudentService لتحميل الطلاب من الـ CSV
+      final studentsData = await StudentService.loadStudentsFromCsv();
       setState(() {
         _students = studentsData;
         _isLoading = false;
@@ -149,12 +150,18 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         icon: Icons.description_rounded,
                         iconColor: primaryGreen,
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AcademicSequenceScreen(students: _students),
-                            ),
-                          );
+                          if (_students.isNotEmpty) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AcademicSequencePdfScreen(student: _students.first),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('لا يوجد طلاب لعرض وثيقة التسلسل')),
+                            );
+                          }
                         },
                       ),
                     ],
