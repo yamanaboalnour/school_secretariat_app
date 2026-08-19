@@ -44,6 +44,19 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
       }
     }
   }
+// أضف هذه الدالة هنا
+void _addSequenceLog(Student student) {
+  setState(() {
+    _sequenceLogs.add(
+      SequenceLog(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        studentName: student.fullName,
+        generalId: student.generalId,
+        generatedAt: DateTime.now(),
+      ),
+    );
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +152,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => StudentsListScreen(students: _students),
+                              builder: (context) => StudentsListScreen(
+  students: _students,
+  onGenerateSequence: _addSequenceLog, // <-- تم إدراج هذا السطر
+),
                             ),
                           );
                         },

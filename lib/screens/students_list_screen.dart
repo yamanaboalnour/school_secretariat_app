@@ -5,8 +5,13 @@ import 'student_card_pdf.dart';
 
 class StudentsListScreen extends StatefulWidget {
   final List<Student> students;
+  final Function(Student)? onGenerateSequence; // <-- أضف هذا السطر
 
-  const StudentsListScreen({Key? key, required this.students}) : super(key: key);
+  const StudentsListScreen({
+    Key? key,
+    required this.students,
+    this.onGenerateSequence, // <-- أضف هذا السطر
+  }) : super(key: key);
 
   @override
   State<StudentsListScreen> createState() => _StudentsListScreenState();
