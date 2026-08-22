@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/backup_service.dart';
+import 'package:file_picker/file_picker.dart';
+import '../../data/backup_service.dart';
 
 class BackupPage extends StatefulWidget {
   const BackupPage({super.key});
@@ -93,9 +94,37 @@ class _BackupPageState extends State<BackupPage> {
   }
 
   Future<void> _handleRestore(BuildContext context) async {
-    // إجراء استعادة البيانات يتطلب حذر لتجنب الفقدان غير المقصود
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['db'],
+    );
+
+    if (result == null || result.files.single.path == null || !mounted) {
+      return;
+    }
+
     setState(() {
-      _statusMessage = 'ميزة تحديد الملف تفاعلياً تستدعي حزمة file_picker.';
+      _isLoading = true;
+      _statusMessage = 'جاري استعادة قاعدة البيانات...';
     });
+
+    try {
+      await BackupService.restoreBackup(result.files.single.path!);
+      if (mounted) {
+        setState(() {
+          _statusMessage = 'تمت استعادة البيانات بنجاح! يُرجى إعادة تشغيل الشاشة.';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _statusMessage = 'فشلت عملية الاستعادة: ${e.toString()}';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 }
