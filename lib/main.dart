@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'core/database/database_helper.dart';
-import 'features/students/data/repositories/student_repository.dart';
-import 'features/students/presentation/bloc/student_bloc.dart';
-import 'features/students/presentation/pages/students_list_page.dart';
+import 'database/database_helper.dart';
+import 'features/dashboard/presentation/pages/dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,10 +20,7 @@ class SchoolSecretariatApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: BlocProvider(
-        create: (context) => StudentBloc(StudentRepository())..add(LoadStudentsEvent()),
-        child: const StudentsListPage(),
-      ),
+      home: const DashboardPage(),
     );
   }
 }
