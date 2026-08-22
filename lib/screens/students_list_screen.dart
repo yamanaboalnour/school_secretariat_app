@@ -7,7 +7,7 @@ import 'edit_student_screen.dart';
 class StudentsListScreen extends StatelessWidget {
   final Function(Student)? onGenerateSequence;
 
-  const StudentsListScreen({Key? key, this.onGenerateSequence}) : super(key: key);
+  const StudentsListScreen({super.key, this.onGenerateSequence});
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +83,7 @@ class StudentsListScreen extends StatelessWidget {
           TextButton(
             child: const Text('حذف', style: TextStyle(color: Colors.red)),
             onPressed: () {
-              if (student.generalId != null) {
-                provider.deleteStudent(student.generalId!);
-              }
+              provider.deleteStudent(student.generalId);
               Navigator.of(ctx).pop();
             },
           ),

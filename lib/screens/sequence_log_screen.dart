@@ -4,7 +4,7 @@ import '../models/sequence_log_model.dart';
 class SequenceLogScreen extends StatelessWidget {
   final List<SequenceLog> logs;
 
-  const SequenceLogScreen({Key? key, required this.logs}) : super(key: key);
+  const SequenceLogScreen({super.key, required this.logs});
 
   @override
   Widget build(BuildContext context) {

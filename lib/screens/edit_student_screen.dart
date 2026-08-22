@@ -6,7 +6,7 @@ import '../providers/student_provider.dart';
 class EditStudentScreen extends StatefulWidget {
   final Student? student; // إذا كان null فهذا يعني إضافة طالب جديد
 
-  const EditStudentScreen({Key? key, this.student}) : super(key: key);
+  const EditStudentScreen({super.key, this.student});
 
   @override
   State<EditStudentScreen> createState() => _EditStudentScreenState();

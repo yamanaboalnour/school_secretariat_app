@@ -6,7 +6,7 @@ import '../services/sequence_service.dart';
 class DashboardScreen extends StatefulWidget {
   final List<Student> students;
 
-  const DashboardScreen({Key? key, required this.students}) : super(key: key);
+  const DashboardScreen({super.key, required this.students});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();

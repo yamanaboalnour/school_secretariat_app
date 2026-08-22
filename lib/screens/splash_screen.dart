@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'main_menu_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -55,7 +55,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF0D5C3A);
     const goldAccent = Color(0xFFD4AF37);
 
     return Scaffold(
@@ -85,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       border: Border.all(color: goldAccent, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: goldAccent.withOpacity(0.2),
+                          color: goldAccent.withValues(alpha: 0.2),
                           blurRadius: 25,
                           spreadRadius: 5,
                         ),

@@ -9,8 +9,7 @@ import '../models/student_model.dart';
 class AcademicSequencePdfScreen extends StatelessWidget {
   final Student student;
 
-  const AcademicSequencePdfScreen({Key? key, required this.student})
-      : super(key: key);
+  const AcademicSequencePdfScreen({super.key, required this.student});
 
   @override
   Widget build(BuildContext context) {

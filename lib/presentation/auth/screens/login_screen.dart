@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../features/dashboard/presentation/pages/dashboard_page.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -23,7 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
       
       // التوجيه للوحة التحكم بعد نجاح الدخول
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardPage()),
+      );
     }
   }
 
@@ -40,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               )

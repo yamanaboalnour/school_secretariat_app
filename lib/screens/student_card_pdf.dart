@@ -8,7 +8,7 @@ import '../models/student_model.dart';
 class StudentCardPdfScreen extends StatelessWidget {
   final Student student;
 
-  const StudentCardPdfScreen({Key? key, required this.student}) : super(key: key);
+  const StudentCardPdfScreen({super.key, required this.student});
 
   @override
   Widget build(BuildContext context) {

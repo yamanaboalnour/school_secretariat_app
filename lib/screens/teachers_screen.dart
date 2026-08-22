@@ -133,7 +133,7 @@ class _TeachersScreenState extends State<TeachersScreen> {
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<TeacherRole>(
-                value: _selectedRole,
+                initialValue: _selectedRole,
                 items: const [
                   DropdownMenuItem(value: TeacherRole.teacher, child: Text('مدرس')),
                   DropdownMenuItem(value: TeacherRole.secretary, child: Text('أمين سر')),
@@ -172,7 +172,8 @@ class _TeachersScreenState extends State<TeachersScreen> {
                 _emailController.clear();
                 _classesController.clear();
 
-                if (mounted) Navigator.pop(context);
+                if (!mounted) return;
+                Navigator.pop(this.context);
               }
             },
             child: const Text('حفظ'),

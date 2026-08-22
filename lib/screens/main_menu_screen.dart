@@ -3,7 +3,7 @@ import 'students_list_screen.dart';
 import 'academic_sequence_pdf.dart';
 
 class MainMenuScreen extends StatelessWidget {
-  const MainMenuScreen({Key? key}) : super(key: key);
+  const MainMenuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
