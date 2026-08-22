@@ -11,6 +11,10 @@ import '../../../students/data/repositories/student_repository.dart';
 import '../../../students/presentation/bloc/student_bloc.dart';
 import '../../../students/presentation/pages/students_list_page.dart';
 import '../../../../database/database_helper.dart';
+import '../../../../core/sync/firebase_initializer.dart';
+import '../../../../core/sync/repositories/sync_queue_repository.dart';
+import '../../../../core/sync/sync_service.dart';
+import '../../../../core/sync/transports/firestore_sync_transport.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -28,12 +32,22 @@ class _DashboardPageState extends State<DashboardPage> {
   int _documentCount = 0;
   Map<String, int> _studentsByGrade = {};
   AuthUserModel? _currentUser;
+  final SyncQueueRepository _syncQueue = SyncQueueRepository();
+  int _pendingSyncCount = 0;
+  bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
     _loadCurrentUser();
     _loadStatistics();
+    _loadPendingSyncCount();
+  }
+
+  Future<void> _loadPendingSyncCount() async {
+    final count = await _syncQueue.pendingCount();
+    if (!mounted) return;
+    setState(() => _pendingSyncCount = count);
   }
 
   Future<void> _loadCurrentUser() async {
@@ -119,6 +133,21 @@ class _DashboardPageState extends State<DashboardPage> {
             tooltip: 'تحديث الإحصائيات',
           ),
           IconButton(
+            onPressed: _isSyncing ? null : _syncNow,
+            icon: _isSyncing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Badge(
+                    isLabelVisible: _pendingSyncCount > 0,
+                    label: Text(_pendingSyncCount.toString()),
+                    child: const Icon(Icons.sync),
+                  ),
+            tooltip: 'مزامنة البيانات',
+          ),
+          IconButton(
             onPressed: _logout,
             icon: const Icon(Icons.logout),
             tooltip: 'تسجيل الخروج',
@@ -153,6 +182,34 @@ class _DashboardPageState extends State<DashboardPage> {
       MaterialPageRoute(builder: (_) => const AuthGate()),
       (route) => false,
     );
+  }
+
+  Future<void> _syncNow() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    try {
+      await FirebaseInitializer.initialize();
+      final result = await SyncService(
+        transport: FirestoreSyncTransport(),
+      ).syncPending();
+      await _loadPendingSyncCount();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'تمت المزامنة: ${result.synced} ناجحة، '
+            '${result.failed} فاشلة، ${result.conflicts} تعارض.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر الاتصال بالمزامنة: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
   }
 
   Widget _buildBody() {
@@ -205,6 +262,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   value: _documentCount.toString(),
                   icon: Icons.description,
                   color: Colors.deepOrange,
+                ),
+                _buildStatCard(
+                  width: cardWidth,
+                  title: 'عمليات بانتظار المزامنة',
+                  value: _pendingSyncCount.toString(),
+                  icon: Icons.cloud_upload,
+                  color: Colors.blueGrey,
                 ),
               ],
             );
