@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
-import '../../data/models/student_model.dart';
+import '../../data/datasources/excel_service.dart';
 import 'add_student_page.dart';
 import '../../../documents/presentation/pages/document_preview_page.dart';
 
@@ -14,6 +14,66 @@ class StudentsListPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('إدارة سجلات الطلاب'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download),
+            tooltip: 'تصدير الطلاب إلى Excel',
+            onPressed: () async {
+              final state = context.read<StudentBloc>().state;
+              if (state is! StudentLoadedState || state.students.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('لا توجد بيانات طلاب لتصديرها.')),
+                );
+                return;
+              }
+
+              try {
+                final saved = await ExcelService.exportStudentsToExcel(
+                  state.students,
+                );
+                if (!context.mounted || !saved) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('تم تصدير قائمة الطلاب بنجاح.')),
+                );
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('فشل تصدير الملف: $error')),
+                );
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.file_upload),
+            tooltip: 'استيراد طلاب من ملف Excel',
+            onPressed: () async {
+              try {
+                final importedStudents =
+                    await ExcelService.importStudentsFromExcel();
+                if (!context.mounted || importedStudents.isEmpty) {
+                  return;
+                }
+
+                for (final student in importedStudents) {
+                  context.read<StudentBloc>().add(AddStudentEvent(student));
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'تم استيراد ${importedStudents.length} طالب بنجاح!',
+                    ),
+                  ),
+                );
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('فشل استيراد الملف: $error')),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: Directionality(
         textDirection: TextDirection.rtl,

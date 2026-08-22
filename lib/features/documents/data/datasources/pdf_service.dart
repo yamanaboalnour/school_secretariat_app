@@ -3,11 +3,35 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../../students/data/models/student_model.dart';
+import '../../../settings/data/repositories/school_profile_repository.dart';
 
 class PdfService {
   /// توليد وثيقة تسلسل دراسي
-  static Future<Uint8List> generateSequenceDocument(StudentModel student) async {
+  static Future<Uint8List> generateSequenceDocument(
+    StudentModel student, {
+    String? schoolName,
+    String? governorate,
+    String? directorName,
+    String? secretaryName,
+  }) async {
     final pdf = pw.Document();
+    final profile = await SchoolProfileRepository().getProfile();
+    final resolvedSchoolName = _valueOrDefault(
+      schoolName ?? profile.schoolName,
+      'مدرسة الأمل الخاصة',
+    );
+    final resolvedGovernorate = _valueOrDefault(
+      governorate ?? profile.governorate,
+      'دمشق',
+    );
+    final resolvedDirectorName = _valueOrDefault(
+      directorName ?? profile.directorName,
+      'أحمد العلي',
+    );
+    final resolvedSecretaryName = _valueOrDefault(
+      secretaryName ?? profile.secretaryName,
+      'محمد خليل',
+    );
 
     // تحميل خط عربي للطباعة المتقنة
     final font = await PdfGoogleFonts.cairoRegular();
@@ -21,18 +45,19 @@ class PdfService {
           return pw.Padding(
             padding: const pw.EdgeInsets.all(24),
             child: pw.Column(
-              cross: pw.CrossAxisAlignment.start,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 // الهيدر الرسمي
-                pw.Row(
-                  main: pw.MainAxisAlignment.spaceBetween,
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Column(
-                      cross: pw.CrossAxisAlignment.start,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text('الجمهورية العربية السورية', style: pw.TextStyle(font: font, fontSize: 12)),
                         pw.Text('وزارة التربية', style: pw.TextStyle(font: font, fontSize: 12)),
-                        pw.Text('مديرية التربية', style: pw.TextStyle(font: font, fontSize: 12)),
+                        pw.Text('مديرية تربية $resolvedGovernorate', style: pw.TextStyle(font: font, fontSize: 12)),
+                        pw.Text(resolvedSchoolName, style: pw.TextStyle(font: fontBold, fontSize: 13)),
                       ],
                     ),
                     pw.Text('أمانة السر المدرسية', style: pw.TextStyle(font: fontBold, fontSize: 16)),
@@ -73,10 +98,10 @@ class PdfService {
 
                 // التواقيع
                 pw.Row(
-                  main: pw.MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('أمبن السر: ....................', style: pw.TextStyle(font: font, fontSize: 12)),
-                    pw.Text('مدير المدرسة: ....................', style: pw.TextStyle(font: fontBold, fontSize: 12)),
+                    pw.Text('أمين السر: $resolvedSecretaryName', style: pw.TextStyle(font: font, fontSize: 12)),
+                    pw.Text('مدير المدرسة: $resolvedDirectorName', style: pw.TextStyle(font: fontBold, fontSize: 12)),
                   ],
                 ),
               ],
@@ -87,5 +112,9 @@ class PdfService {
     );
 
     return pdf.save();
+  }
+
+  static String _valueOrDefault(String value, String fallback) {
+    return value.trim().isEmpty ? fallback : value.trim();
   }
 }

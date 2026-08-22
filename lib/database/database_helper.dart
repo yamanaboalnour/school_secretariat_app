@@ -28,8 +28,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -59,6 +60,26 @@ class DatabaseHelper {
         issue_date TEXT NOT NULL,
         file_path TEXT,
         FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await _createSchoolProfileTable(db);
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _createSchoolProfileTable(db);
+    }
+  }
+
+  Future<void> _createSchoolProfileTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS school_profile (
+        id INTEGER PRIMARY KEY,
+        school_name TEXT NOT NULL,
+        governorate TEXT NOT NULL,
+        director_name TEXT NOT NULL,
+        secretary_name TEXT NOT NULL
       )
     ''');
   }
