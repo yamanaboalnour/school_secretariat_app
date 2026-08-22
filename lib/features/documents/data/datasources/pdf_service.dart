@@ -3,6 +3,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../../students/data/models/student_model.dart';
+import '../../../grades/data/models/grade_model.dart';
 import '../../../settings/data/repositories/school_profile_repository.dart';
 
 class PdfService {
@@ -103,6 +104,111 @@ class PdfService {
                     pw.Text('أمين السر: $resolvedSecretaryName', style: pw.TextStyle(font: font, fontSize: 12)),
                     pw.Text('مدير المدرسة: $resolvedDirectorName', style: pw.TextStyle(font: fontBold, fontSize: 12)),
                   ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  /// توليد جلاء / كشف علامات مدرسي
+  static Future<Uint8List> generateReportCard({
+    required StudentModel student,
+    required List<GradeModel> grades,
+    String? schoolName,
+  }) async {
+    final pdf = pw.Document();
+    final profile = await SchoolProfileRepository().getProfile();
+    final resolvedSchoolName = _valueOrDefault(
+      schoolName ?? profile.schoolName,
+      'مدرسة الأمل الخاصة',
+    );
+    final font = await PdfGoogleFonts.cairoRegular();
+    final fontBold = await PdfGoogleFonts.cairoBold();
+    final totalScore = grades.fold<double>(
+      0,
+      (sum, grade) => sum + grade.total,
+    );
+    final result = grades.isEmpty || grades.any((grade) => grade.total < 50)
+        ? 'راسب'
+        : 'ناجح';
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        textDirection: pw.TextDirection.rtl,
+        build: (pw.Context context) {
+          return pw.Padding(
+            padding: const pw.EdgeInsets.all(20),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                pw.Text(
+                  resolvedSchoolName,
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(font: fontBold, fontSize: 15),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'كشف علامات الطالب (الجلاء المدرسي)',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(font: fontBold, fontSize: 18),
+                ),
+                pw.SizedBox(height: 15),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      'اسم الطالب: ${student.firstName} ${student.lastName}',
+                      style: pw.TextStyle(font: font, fontSize: 12),
+                    ),
+                    pw.Text(
+                      'الصف: ${student.gradeLevel}',
+                      style: pw.TextStyle(font: font, fontSize: 12),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+                pw.TableHelper.fromTextArray(
+                  headers: ['المادة', 'الفصل الأول', 'الفصل الثاني', 'المجموع النهائي'],
+                  data: grades
+                      .map(
+                        (grade) => [
+                          grade.subjectName,
+                          grade.firstTerm.toStringAsFixed(2),
+                          grade.secondTerm.toStringAsFixed(2),
+                          grade.total.toStringAsFixed(2),
+                        ],
+                      )
+                      .toList(),
+                  cellStyle: pw.TextStyle(font: font, fontSize: 11),
+                  headerStyle: pw.TextStyle(font: fontBold, fontSize: 12),
+                  headerDecoration: const pw.BoxDecoration(
+                    color: PdfColors.grey300,
+                  ),
+                  cellAlignment: pw.Alignment.center,
+                ),
+                pw.SizedBox(height: 20),
+                pw.Align(
+                  alignment: pw.Alignment.centerLeft,
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'المجموع العام: ${totalScore.toStringAsFixed(2)}',
+                        style: pw.TextStyle(font: fontBold, fontSize: 14),
+                      ),
+                      pw.SizedBox(height: 6),
+                      pw.Text(
+                        'النتيجة: $result',
+                        style: pw.TextStyle(font: fontBold, fontSize: 14),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

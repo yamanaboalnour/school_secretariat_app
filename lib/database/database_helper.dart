@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DatabaseHelper {
@@ -28,7 +27,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -64,11 +63,15 @@ class DatabaseHelper {
     ''');
 
     await _createSchoolProfileTable(db);
+    await _createGradesTable(db);
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await _createSchoolProfileTable(db);
+    }
+    if (oldVersion < 3) {
+      await _createGradesTable(db);
     }
   }
 
@@ -80,6 +83,20 @@ class DatabaseHelper {
         governorate TEXT NOT NULL,
         director_name TEXT NOT NULL,
         secretary_name TEXT NOT NULL
+      )
+    ''');
+  }
+
+  Future<void> _createGradesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS grades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        subject_name TEXT NOT NULL,
+        first_term REAL NOT NULL DEFAULT 0,
+        second_term REAL NOT NULL DEFAULT 0,
+        UNIQUE(student_id, subject_name),
+        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
       )
     ''');
   }
