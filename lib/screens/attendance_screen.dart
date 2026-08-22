@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
+import '../features/attendance/presentation/pages/attendance_page.dart';
 
-/// Compatibility entry point kept until attendance is migrated to local SQLite.
+/// Compatibility entry point for older navigation paths.
 class AttendanceScreen extends StatelessWidget {
   const AttendanceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('الحضور والغياب اليومي')),
-      body: const Center(
-        child: Text('سيتم تفعيل سجل الحضور ضمن قاعدة البيانات المحلية.'),
-      ),
-    );
+    return const AttendancePage();
   }
 }

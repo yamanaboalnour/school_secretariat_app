@@ -17,6 +17,18 @@ class BackupService {
       throw Exception('قاعدة البيانات غير موجودة.');
     }
 
+    final integrity = await DatabaseHelper.instance.database.then(
+      (database) => database.rawQuery('PRAGMA integrity_check'),
+    );
+    if (integrity.isEmpty || integrity.first.values.first != 'ok') {
+      throw Exception('فشل التحقق من سلامة قاعدة البيانات.');
+    }
+
+    final destinationDirectory = Directory(destinationFolderPath);
+    if (!await destinationDirectory.exists()) {
+      await destinationDirectory.create(recursive: true);
+    }
+
     final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
     final backupPath = join(destinationFolderPath, 'school_backup_$timestamp.db');
 
@@ -28,6 +40,10 @@ class BackupService {
     final backupFile = File(backupFilePath);
     if (!await backupFile.exists()) {
       throw Exception('ملف النسخة الاحتياطية غير موجود.');
+    }
+
+    if (backupFile.lengthSync() == 0) {
+      throw Exception('ملف النسخة الاحتياطية فارغ.');
     }
 
     await DatabaseHelper.instance.close();

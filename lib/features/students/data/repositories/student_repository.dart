@@ -64,4 +64,32 @@ class StudentRepository {
       return deleted;
     });
   }
+
+  Future<int> updateStudent(StudentModel student) async {
+    if (student.id == null) {
+      throw ArgumentError('لا يمكن تعديل طالب غير محفوظ.');
+    }
+    final db = await _dbHelper.database;
+    return db.transaction((transaction) async {
+      final values = student.toMap()..remove('id');
+      final updated = await transaction.update(
+        'students',
+        values,
+        where: 'id = ?',
+        whereArgs: [student.id],
+      );
+      if (updated > 0) {
+        await transaction.insert('sync_queue', {
+          'entity_type': 'student',
+          'entity_id': student.id.toString(),
+          'operation': 'upsert',
+          'payload': jsonEncode(student.toMap()),
+          'status': 'pending',
+          'attempts': 0,
+          'created_at': DateTime.now().toUtc().toIso8601String(),
+        });
+      }
+      return updated;
+    });
+  }
 }

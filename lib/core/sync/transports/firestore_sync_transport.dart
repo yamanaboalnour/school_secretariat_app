@@ -20,7 +20,9 @@ class FirestoreSyncTransport implements SyncTransport {
     if (payload is! Map<String, dynamic>) {
       throw const FormatException('بيانات المزامنة غير صالحة.');
     }
-    if (item.entityType != 'student') {
+    if (item.entityType != 'student' &&
+      item.entityType != 'attendance' &&
+      item.entityType != 'grade') {
       throw UnsupportedError(
         'لا يوجد Transport للكيان ${item.entityType} حتى الآن.',
       );

@@ -78,8 +78,13 @@ class _BackupPageState extends State<BackupPage> {
     });
 
     try {
-      // كمثال: حفظ في مجلد المستندات المحلي
-      const destinationDir = '/Users/public/Documents';
+      final destinationDir = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'اختيار مجلد حفظ النسخة الاحتياطية',
+      );
+      if (destinationDir == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
       final file = await BackupService.exportBackup(destinationDir);
       setState(() {
         _statusMessage = 'تم التصدير بنجاح إلى: ${file.path}';

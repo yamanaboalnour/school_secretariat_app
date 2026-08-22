@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
 import '../../data/datasources/excel_service.dart';
+import '../../data/models/student_model.dart';
 import '../../../grades/presentation/pages/student_grades_page.dart';
 import 'add_student_page.dart';
 import '../../../documents/presentation/pages/document_preview_page.dart';
@@ -119,6 +120,11 @@ class StudentsListPage extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  tooltip: 'تعديل بيانات الطالب',
+                                  onPressed: () => _editStudent(context, student),
+                                ),
+                                IconButton(
                                   icon: const Icon(Icons.grade, color: Colors.orange),
                                   tooltip: 'كشف العلامات والدرجات',
                                   onPressed: () {
@@ -185,5 +191,85 @@ class StudentsListPage extends StatelessWidget {
         label: const Text('إضافة طالب'),
       ),
     );
+  }
+
+  Future<void> _editStudent(BuildContext context, StudentModel student) async {
+    final firstName = TextEditingController(text: student.firstName);
+    final lastName = TextEditingController(text: student.lastName);
+    final fatherName = TextEditingController(text: student.fatherName);
+    final motherName = TextEditingController(text: student.motherName);
+    final gradeLevel = TextEditingController(text: student.gradeLevel);
+    final nationalId = TextEditingController(text: student.nationalId ?? '');
+
+    final updated = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('تعديل بيانات الطالب'),
+        content: Directionality(
+          textDirection: TextDirection.rtl,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final field in [
+                  (firstName, 'الاسم الأول'),
+                  (lastName, 'الكنية'),
+                  (fatherName, 'اسم الأب'),
+                  (motherName, 'اسم الأم'),
+                  (nationalId, 'الرقم الوطني'),
+                  (gradeLevel, 'الصف'),
+                ])
+                  TextField(
+                    controller: field.$1,
+                    decoration: InputDecoration(labelText: field.$2),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () {
+              context.read<StudentBloc>().add(
+                    UpdateStudentEvent(
+                      StudentModel(
+                        id: student.id,
+                        firstName: firstName.text.trim(),
+                        lastName: lastName.text.trim(),
+                        fatherName: fatherName.text.trim(),
+                        motherName: motherName.text.trim(),
+                        nationalId: nationalId.text.trim().isEmpty
+                            ? null
+                            : nationalId.text.trim(),
+                        birthDate: student.birthDate,
+                        gradeLevel: gradeLevel.text.trim(),
+                        registrationDate: student.registrationDate,
+                        createdAt: student.createdAt,
+                      ),
+                    ),
+                  );
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('حفظ'),
+          ),
+        ],
+      ),
+    );
+
+    firstName.dispose();
+    lastName.dispose();
+    fatherName.dispose();
+    motherName.dispose();
+    gradeLevel.dispose();
+    nationalId.dispose();
+    if (updated == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تعديل بيانات الطالب.')),
+      );
+    }
   }
 }

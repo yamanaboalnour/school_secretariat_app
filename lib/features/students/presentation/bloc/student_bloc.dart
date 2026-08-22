@@ -20,6 +20,11 @@ class DeleteStudentEvent extends StudentEvent {
   DeleteStudentEvent(this.id);
 }
 
+class UpdateStudentEvent extends StudentEvent {
+  final StudentModel student;
+  UpdateStudentEvent(this.student);
+}
+
 // --- States ---
 abstract class StudentState {}
 
@@ -64,6 +69,15 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
         add(LoadStudentsEvent());
       } catch (e) {
         emit(StudentErrorState('فشل في حذف الطالب: ${e.toString()}'));
+      }
+    });
+
+    on<UpdateStudentEvent>((event, emit) async {
+      try {
+        await repository.updateStudent(event.student);
+        add(LoadStudentsEvent());
+      } catch (e) {
+        emit(StudentErrorState('فشل تعديل الطالب: ${e.toString()}'));
       }
     });
   }

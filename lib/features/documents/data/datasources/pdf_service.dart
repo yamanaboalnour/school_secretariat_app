@@ -5,6 +5,7 @@ import 'package:printing/printing.dart';
 import '../../../students/data/models/student_model.dart';
 import '../../../grades/data/models/grade_model.dart';
 import '../../../settings/data/repositories/school_profile_repository.dart';
+import '../services/document_verification_service.dart';
 
 class PdfService {
   /// توليد وثيقة تسلسل دراسي
@@ -32,6 +33,13 @@ class PdfService {
     final resolvedSecretaryName = _valueOrDefault(
       secretaryName ?? profile.secretaryName,
       'محمد خليل',
+    );
+    final documentSerial = _documentSerial(student);
+    final verificationToken = DocumentVerificationService.createToken(
+      studentId: student.id ?? 0,
+      studentName: '${student.firstName} ${student.lastName}',
+      serial: documentSerial,
+      documentType: 'sequence',
     );
 
     // تحميل خط عربي للطباعة المتقنة
@@ -97,6 +105,23 @@ class PdfService {
                 ),
                 pw.SizedBox(height: 60),
 
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.BarcodeWidget(
+                      data: verificationToken,
+                      barcode: pw.Barcode.qrCode(),
+                      width: 55,
+                      height: 55,
+                    ),
+                    pw.Text(
+                      'الرقم التسلسلي: $documentSerial',
+                      style: pw.TextStyle(font: font, fontSize: 9),
+                    ),
+                  ],
+                ),
+
                 // التواقيع
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -136,6 +161,13 @@ class PdfService {
     final result = grades.isEmpty || grades.any((grade) => grade.total < 50)
         ? 'راسب'
         : 'ناجح';
+    final documentSerial = _documentSerial(student);
+    final verificationToken = DocumentVerificationService.createToken(
+      studentId: student.id ?? 0,
+      studentName: '${student.firstName} ${student.lastName}',
+      serial: documentSerial,
+      documentType: 'report_card',
+    );
 
     pdf.addPage(
       pw.Page(
@@ -210,6 +242,23 @@ class PdfService {
                     ],
                   ),
                 ),
+                pw.SizedBox(height: 18),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.BarcodeWidget(
+                      data: verificationToken,
+                      barcode: pw.Barcode.qrCode(),
+                      width: 55,
+                      height: 55,
+                    ),
+                    pw.Text(
+                      'الرقم التسلسلي: $documentSerial',
+                      style: pw.TextStyle(font: font, fontSize: 9),
+                    ),
+                  ],
+                ),
               ],
             ),
           );
@@ -223,4 +272,10 @@ class PdfService {
   static String _valueOrDefault(String value, String fallback) {
     return value.trim().isEmpty ? fallback : value.trim();
   }
+
+  static String _documentSerial(StudentModel student) {
+    final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
+    return 'SCH-${student.id ?? 0}-$timestamp';
+  }
+
 }
