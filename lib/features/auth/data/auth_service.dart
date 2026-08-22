@@ -27,4 +27,33 @@ class AuthService {
   }
 
   Future<void> logout() => _storage.clearSession();
+
+  Future<List<AuthUserModel>> getUsers() => _repository.getUsers();
+
+  Future<void> createUser({
+    required String username,
+    required String fullName,
+    required String password,
+    required String role,
+  }) =>
+      _repository.createUser(
+        username: username,
+        fullName: fullName,
+        password: password,
+        role: role,
+      );
+
+  Future<void> changePassword({
+    required String username,
+    required String currentPassword,
+    required String newPassword,
+  }) =>
+      _repository.changePassword(
+        username: username,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+
+  Future<void> setUserActive(int userId, bool isActive) =>
+      _repository.setUserActive(userId, isActive);
 }

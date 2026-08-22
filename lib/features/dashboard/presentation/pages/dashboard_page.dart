@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../auth/data/auth_service.dart';
+import '../../../auth/data/models/auth_user_model.dart';
 import '../../../auth/presentation/pages/auth_gate.dart';
+import '../../../auth/presentation/pages/user_management_page.dart';
 import '../../../backup/presentation/pages/backup_page.dart';
 import '../../../students/data/repositories/student_repository.dart';
 import '../../../students/presentation/bloc/student_bloc.dart';
@@ -25,11 +27,19 @@ class _DashboardPageState extends State<DashboardPage> {
   int _gradeCount = 0;
   int _documentCount = 0;
   Map<String, int> _studentsByGrade = {};
+  AuthUserModel? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentUser();
     _loadStatistics();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final user = await AuthService().currentUser();
+    if (!mounted) return;
+    setState(() => _currentUser = user);
   }
 
   Future<void> _loadStatistics() async {
@@ -40,7 +50,8 @@ class _DashboardPageState extends State<DashboardPage> {
           ) ??
           0;
       final gradeCount = Sqflite.firstIntValue(
-            await database.rawQuery('SELECT COUNT(DISTINCT grade_level) FROM students'),
+            await database
+                .rawQuery('SELECT COUNT(DISTINCT grade_level) FROM students'),
           ) ??
           0;
       final documentCount = Sqflite.firstIntValue(
@@ -80,7 +91,8 @@ class _DashboardPageState extends State<DashboardPage> {
       context,
       MaterialPageRoute(
         builder: (_) => BlocProvider(
-          create: (_) => StudentBloc(StudentRepository())..add(LoadStudentsEvent()),
+          create: (_) =>
+              StudentBloc(StudentRepository())..add(LoadStudentsEvent()),
           child: const StudentsListPage(),
         ),
       ),
@@ -111,6 +123,17 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: const Icon(Icons.logout),
             tooltip: 'تسجيل الخروج',
           ),
+          if (_currentUser?.role == 'ADMIN')
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const UserManagementPage(),
+                ),
+              ),
+              icon: const Icon(Icons.manage_accounts),
+              tooltip: 'إدارة المستخدمين',
+            ),
         ],
       ),
       body: Directionality(
