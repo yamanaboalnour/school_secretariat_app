@@ -1,4 +1,4 @@
-import '../../../../core/database/database_helper.dart';
+import '../../../../database/database_helper.dart';
 import '../models/student_model.dart';
 
 class StudentRepository {
