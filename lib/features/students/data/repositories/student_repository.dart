@@ -42,6 +42,17 @@ class StudentRepository {
     return List.generate(maps.length, (i) => StudentModel.fromMap(maps[i]));
   }
 
+  Future<StudentModel?> getStudentById(int id) async {
+    final db = await _dbHelper.database;
+    final rows = await db.query(
+      'students',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : StudentModel.fromMap(rows.first);
+  }
+
   Future<int> deleteStudent(int id) async {
     final db = await _dbHelper.database;
     return db.transaction((transaction) async {

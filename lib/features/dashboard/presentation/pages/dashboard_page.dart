@@ -7,6 +7,7 @@ import '../../../auth/data/models/auth_user_model.dart';
 import '../../../auth/presentation/pages/auth_gate.dart';
 import '../../../auth/presentation/pages/user_management_page.dart';
 import '../../../backup/presentation/pages/backup_page.dart';
+import '../../../documents/presentation/pages/qr_scanner_page.dart';
 import '../../../students/data/repositories/student_repository.dart';
 import '../../../students/presentation/bloc/student_bloc.dart';
 import '../../../students/presentation/pages/students_list_page.dart';
@@ -117,6 +118,13 @@ class _DashboardPageState extends State<DashboardPage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const BackupPage()),
+    );
+  }
+
+  void _openQrScanner() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const QrScannerPage()),
     );
   }
 
@@ -312,6 +320,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.security,
                 color: Colors.teal,
                 onTap: _openBackup,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildMenuButton(
+                title: 'تحقق من وثيقة',
+                icon: Icons.qr_code_scanner,
+                color: Colors.deepOrange,
+                onTap: _openQrScanner,
               ),
             ),
           ],

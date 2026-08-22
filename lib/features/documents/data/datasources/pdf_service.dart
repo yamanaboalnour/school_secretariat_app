@@ -34,7 +34,7 @@ class PdfService {
       secretaryName ?? profile.secretaryName,
       'محمد خليل',
     );
-    final documentSerial = _documentSerial(student);
+    final documentSerial = _documentSerial(student, 'sequence');
     final verificationToken = DocumentVerificationService.createToken(
       studentId: student.id ?? 0,
       studentName: '${student.firstName} ${student.lastName}',
@@ -161,7 +161,7 @@ class PdfService {
     final result = grades.isEmpty || grades.any((grade) => grade.total < 50)
         ? 'راسب'
         : 'ناجح';
-    final documentSerial = _documentSerial(student);
+    final documentSerial = _documentSerial(student, 'report_card');
     final verificationToken = DocumentVerificationService.createToken(
       studentId: student.id ?? 0,
       studentName: '${student.firstName} ${student.lastName}',
@@ -273,9 +273,9 @@ class PdfService {
     return value.trim().isEmpty ? fallback : value.trim();
   }
 
-  static String _documentSerial(StudentModel student) {
+  static String _documentSerial(StudentModel student, String documentType) {
     final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
-    return 'SCH-${student.id ?? 0}-$timestamp';
+    return 'SCH-$documentType-${student.id ?? 0}-$timestamp';
   }
 
 }

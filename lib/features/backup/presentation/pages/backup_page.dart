@@ -85,7 +85,15 @@ class _BackupPageState extends State<BackupPage> {
         if (mounted) setState(() => _isLoading = false);
         return;
       }
-      final file = await BackupService.exportBackup(destinationDir);
+      final password = await _askPassword('تعيين كلمة مرور النسخة الاحتياطية');
+      if (password == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+      final file = await BackupService.exportEncryptedBackup(
+        destinationDir,
+        password,
+      );
       setState(() {
         _statusMessage = 'تم التصدير بنجاح إلى: ${file.path}';
       });
@@ -101,7 +109,7 @@ class _BackupPageState extends State<BackupPage> {
   Future<void> _handleRestore(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['db'],
+      allowedExtensions: ['enc', 'db'],
     );
 
     if (result == null || result.files.single.path == null || !mounted) {
@@ -114,7 +122,17 @@ class _BackupPageState extends State<BackupPage> {
     });
 
     try {
-      await BackupService.restoreBackup(result.files.single.path!);
+      final password = await _askPassword('إدخال كلمة مرور النسخة الاحتياطية');
+      if (password == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+      final backupPath = result.files.single.path!;
+      if (backupPath.endsWith('.enc')) {
+        await BackupService.restoreEncryptedBackup(backupPath, password);
+      } else {
+        await BackupService.restoreBackup(backupPath);
+      }
       if (mounted) {
         setState(() {
           _statusMessage = 'تمت استعادة البيانات بنجاح! يُرجى إعادة تشغيل الشاشة.';
@@ -131,5 +149,33 @@ class _BackupPageState extends State<BackupPage> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<String?> _askPassword(String title) {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'كلمة المرور (8 محارف على الأقل)',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('متابعة'),
+          ),
+        ],
+      ),
+    ).whenComplete(controller.dispose);
   }
 }
