@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
 import '../../data/datasources/excel_service.dart';
+import '../../../grades/presentation/pages/student_grades_page.dart';
 import 'add_student_page.dart';
 import '../../../documents/presentation/pages/document_preview_page.dart';
 
@@ -117,6 +118,18 @@ class StudentsListPage extends StatelessWidget {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                IconButton(
+                                  icon: const Icon(Icons.grade, color: Colors.orange),
+                                  tooltip: 'كشف العلامات والدرجات',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => StudentGradesPage(student: student),
+                                      ),
+                                    );
+                                  },
+                                ),
                                 // زر الطباعة
                                 IconButton(
                                   icon: const Icon(Icons.print, color: Colors.indigo),
