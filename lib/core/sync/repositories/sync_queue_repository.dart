@@ -55,6 +55,16 @@ class SyncQueueRepository {
     );
   }
 
+  Future<void> markConflict(int id, Object error) async {
+    final database = await _databaseHelper.database;
+    await database.update(
+      'sync_queue',
+      {'status': 'conflict', 'last_error': error.toString()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<int> pendingCount() async {
     final database = await _databaseHelper.database;
     final rows = await database.rawQuery(
