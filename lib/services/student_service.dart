@@ -1,12 +1,13 @@
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:csv/csv.dart';
 import '../models/student_model.dart';
+import 'package:csv/csv.dart';
 
 class StudentService {
   static Future<List<Student>> loadStudentsFromCsv() async {
     try {
       final rawData = await rootBundle.loadString('assets/students.csv');
-      List<List<dynamic>> listData = const CsvToListConverter().convert(rawData);
+List<List<dynamic>> listData = CsvToListConverter().convert(rawData);
 
       List<Student> students = [];
       // التجاوز عن السطر الأول (Header)

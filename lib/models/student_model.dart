@@ -7,7 +7,7 @@ class Student {
   final String birthDate;
   final String latestGrade;
   final String latestStatus;
-  final Map<String, String> academicHistory;
+  final bool isSynced; // للتأكد من المزامنة مع السحابة لاحقاً
 
   Student({
     required this.generalId,
@@ -18,8 +18,22 @@ class Student {
     required this.birthDate,
     this.latestGrade = 'غير محدد',
     this.latestStatus = 'مستجد',
-    this.academicHistory = const {},
+    this.isSynced = false,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'generalId': generalId,
+      'fullName': fullName,
+      'fatherName': fatherName,
+      'motherName': motherName,
+      'birthPlace': birthPlace,
+      'birthDate': birthDate,
+      'latestGrade': latestGrade,
+      'latestStatus': latestStatus,
+      'isSynced': isSynced ? 1 : 0,
+    };
+  }
 
   factory Student.fromMap(Map<String, dynamic> map) {
     return Student(
@@ -31,7 +45,7 @@ class Student {
       birthDate: map['birthDate'] ?? '',
       latestGrade: map['latestGrade'] ?? 'غير محدد',
       latestStatus: map['latestStatus'] ?? 'مستجد',
-      academicHistory: Map<String, String>.from(map['academicHistory'] ?? {}),
+      isSynced: (map['isSynced'] ?? 0) == 1,
     );
   }
 }

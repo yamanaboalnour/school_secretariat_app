@@ -134,7 +134,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Column(
-          mainAxisAlignment: MainCenter: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 48, color: color),
             const SizedBox(height: 12),
