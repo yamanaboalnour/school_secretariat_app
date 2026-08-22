@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
 import '../../data/models/student_model.dart';
 import 'add_student_page.dart';
+import '../../../documents/presentation/pages/document_preview_page.dart';
 
 class StudentsListPage extends StatelessWidget {
   const StudentsListPage({super.key});
@@ -48,17 +49,38 @@ class StudentsListPage extends StatelessWidget {
                           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                           child: ListTile(
                             leading: CircleAvatar(
-                              child: Text(student.firstName[0]),
+                              child: Text(student.firstName.isNotEmpty ? student.firstName[0] : '?'),
                             ),
                             title: Text('${student.firstName} ${student.lastName}'),
                             subtitle: Text('الأب: ${student.fatherName} | الصف: ${student.gradeLevel}'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                if (student.id != null) {
-                                  context.read<StudentBloc>().add(DeleteStudentEvent(student.id!));
-                                }
-                              },
+                            // --- أزرار التحكم بالسطر (الطباعة + الحذف) ---
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // زر الطباعة
+                                IconButton(
+                                  icon: const Icon(Icons.print, color: Colors.indigo),
+                                  tooltip: 'طباعة وثيقة',
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => DocumentPreviewPage(student: student),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                // زر الحذف
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  tooltip: 'حذف الطالب',
+                                  onPressed: () {
+                                    if (student.id != null) {
+                                      context.read<StudentBloc>().add(DeleteStudentEvent(student.id!));
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
