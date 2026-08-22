@@ -45,7 +45,7 @@ class AcademicSequencePdfScreen extends StatelessWidget {
           return pw.Padding(
             padding: const pw.EdgeInsets.all(24),
             child: pw.Column(
-              crosspw: pw.CrossAxisAlignment.start,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 // ترويسة الوثيقة
                 pw.Row(
