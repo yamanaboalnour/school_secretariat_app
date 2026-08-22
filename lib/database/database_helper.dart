@@ -27,7 +27,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -64,6 +64,7 @@ class DatabaseHelper {
 
     await _createSchoolProfileTable(db);
     await _createGradesTable(db);
+    await _createUsersTable(db);
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -72,6 +73,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 3) {
       await _createGradesTable(db);
+    }
+    if (oldVersion < 4) {
+      await _createUsersTable(db);
     }
   }
 
@@ -101,10 +105,26 @@ class DatabaseHelper {
     ''');
   }
 
+  Future<void> _createUsersTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        full_name TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        role TEXT NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+  }
+
   Future<void> close() async {
     final db = _database;
     if (db != null) {
       await db.close();
+      _database = null;
     }
   }
 }

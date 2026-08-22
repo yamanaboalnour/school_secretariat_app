@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../../features/auth/data/auth_service.dart';
+import '../../../features/auth/data/models/auth_user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,6 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthService _authService = AuthService();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -17,14 +20,31 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
-      // محاكاة عملية المصادقة عبر AuthRepository
-      await Future.delayed(const Duration(seconds: 1));
-      
-      setState(() => _isLoading = false);
-      
-      // التوجيه للوحة التحكم بعد نجاح الدخول
+
+      Object? error;
+      AuthUserModel? user;
+      try {
+        user = await _authService.login(
+          _usernameController.text,
+          _passwordController.text,
+        );
+      } catch (exception) {
+        error = exception;
+      }
       if (!mounted) return;
+      setState(() => _isLoading = false);
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('تعذر تسجيل الدخول: $error')),
+        );
+        return;
+      }
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('اسم المستخدم أو كلمة المرور غير صحيحة.')),
+        );
+        return;
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const DashboardPage()),

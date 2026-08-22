@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:crypto/crypto.dart';
 
 class HashHelper {
@@ -11,8 +12,8 @@ class HashHelper {
 
   /// إنشاء Salt عشوائي فريد لكل مستخدم
   static String generateSalt() {
-    final now = DateTime.now().microsecondsSinceEpoch.toString();
-    final bytes = utf8.encode(now);
-    return sha256.convert(bytes).toString().substring(0, 16);
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
+    return base64UrlEncode(bytes);
   }
 }

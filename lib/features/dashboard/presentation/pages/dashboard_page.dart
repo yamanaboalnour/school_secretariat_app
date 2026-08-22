@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../../auth/data/auth_service.dart';
+import '../../../auth/presentation/pages/auth_gate.dart';
 import '../../../backup/presentation/pages/backup_page.dart';
 import '../../../students/data/repositories/student_repository.dart';
 import '../../../students/presentation/bloc/student_bloc.dart';
@@ -104,6 +106,11 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: const Icon(Icons.refresh),
             tooltip: 'تحديث الإحصائيات',
           ),
+          IconButton(
+            onPressed: _logout,
+            icon: const Icon(Icons.logout),
+            tooltip: 'تسجيل الخروج',
+          ),
         ],
       ),
       body: Directionality(
@@ -113,6 +120,15 @@ class _DashboardPageState extends State<DashboardPage> {
           child: _buildBody(),
         ),
       ),
+    );
+  }
+
+  Future<void> _logout() async {
+    await AuthService().logout();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AuthGate()),
+      (route) => false,
     );
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'database/database_helper.dart';
-import 'features/dashboard/presentation/pages/dashboard_page.dart';
+import 'features/auth/presentation/pages/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ class SchoolSecretariatApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const DashboardPage(),
+      home: const AuthGate(),
     );
   }
 }
