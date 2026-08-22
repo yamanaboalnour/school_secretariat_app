@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/student_model.dart';
-import '../services/db_service.dart';
 import '../services/student_service.dart';
 
 class StudentProvider with ChangeNotifier {
@@ -10,36 +9,48 @@ class StudentProvider with ChangeNotifier {
   List<Student> get students => _students;
   bool get isLoading => _isLoading;
 
-  // تحميل البيانات من قاعدة البيانات المحلية (وتهجير بيانات الـ CSV إن كانت القاعدة فارغة)
+  // الدالة المطلوبة في main.dart
   Future<void> fetchAndInitStudents() async {
+    await fetchStudents();
+  }
+
+  Future<void> fetchStudents() async {
     _isLoading = true;
     notifyListeners();
 
-    _students = await DBService.getAllStudents();
-
-    // إذا كانت قاعدة البيانات فارغة للمرة الأولى، نقرأ من الـ CSV ونحفظ في SQLite
-    if (_students.isEmpty) {
-      final csvStudents = await StudentService.loadStudentsFromCsv();
-      for (var student in csvStudents) {
-        await DBService.insertStudent(student);
-      }
-      _students = await DBService.getAllStudents();
+    try {
+      _students = await StudentService.getStudents();
+    } catch (e) {
+      debugPrint('Error fetching students: $e');
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  // إضافة طالب جديد
+  Future<void> loadFromCsv() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final csvStudents = await StudentService.loadStudentsFromCsv();
+      _students.addAll(csvStudents);
+    } catch (e) {
+      debugPrint('Error loading CSV: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> addStudent(Student student) async {
-    await DBService.insertStudent(student);
+    await StudentService.addStudent(student);
     _students.add(student);
     notifyListeners();
   }
 
-  // تعديل بيانات طالب
   Future<void> updateStudent(Student student) async {
-    await DBService.updateStudent(student);
+    await StudentService.updateStudent(student);
     final index = _students.indexWhere((s) => s.generalId == student.generalId);
     if (index != -1) {
       _students[index] = student;
@@ -47,10 +58,10 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  // حذف طالب
-  Future<void> deleteStudent(String generalId) async {
-    await DBService.deleteStudent(generalId);
-    _students.removeWhere((s) => s.generalId == generalId);
+  // دعم نوع البيانات Dynamic لتفادي تعارض (String / int)
+  Future<void> deleteStudent(dynamic id) async {
+    await StudentService.deleteStudent(id);
+    _students.removeWhere((s) => s.generalId == id);
     notifyListeners();
   }
 }

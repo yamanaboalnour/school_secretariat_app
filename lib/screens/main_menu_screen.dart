@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/student_model.dart';
 import 'students_list_screen.dart';
-import 'add_student_screen.dart';
 import 'academic_sequence_pdf.dart';
 
 class MainMenuScreen extends StatelessWidget {
@@ -50,11 +48,8 @@ class MainMenuScreen extends StatelessWidget {
               icon: Icons.person_add,
               color: Colors.green,
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddStudentScreen(),
-                  ),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('شاشة إضافة الطالب تحت التطوير')),
                 );
               },
             ),
