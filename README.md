@@ -1,17 +1,49 @@
-# personal_finance_app
+# أمانة السر المدرسية
 
-A new Flutter project.
+تطبيق Flutter لإدارة البيانات الأساسية لأمانة سر المدرسة، مع اعتماد محلي أولًا كي يبقى العمل ممكنًا عند انقطاع الإنترنت.
 
-## Getting Started
+## ما يتضمنه الإصدار الحالي
 
-This project is a starting point for a Flutter application.
+- إدارة الطلاب والبحث عنهم.
+- العلامات والحضور والغياب.
+- إصدار وثائق مدرسية وقراءة رمز QR للتحقق.
+- نسخ احتياطي مشفّر واستيراد/تصدير البيانات.
+- حسابات مستخدمين، لوحة تحكم، وصف انتظار للمزامنة مع Firebase.
 
-A few resources to get you started if this is your first Flutter project:
+## البدء
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+عند التشغيل الأول يظهر معالج إعداد لإنشاء حساب المدير وإدخال بيانات المدرسة. لا توجد حسابات أو كلمات مرور افتراضية.
+
+## Firebase
+
+المزامنة اختيارية في هذه المرحلة. عند تفعيلها، شغّل التطبيق مع قيم Firebase المناسبة:
+
+```bash
+flutter run \
+  --dart-define=FIREBASE_API_KEY=... \
+  --dart-define=FIREBASE_APP_ID=... \
+  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
+  --dart-define=FIREBASE_PROJECT_ID=...
+```
+
+## الأمان
+
+- كلمات المرور الجديدة تُشتق باستخدام PBKDF2-HMAC-SHA256 مع salt عشوائي.
+- الحسابات التي تستخدم التجزئة القديمة تنتقل تلقائيًا إلى الصيغة الجديدة عند أول دخول ناجح.
+- إصدار الوثائق يتطلب بيانات مدرسة فعلية؛ لا يستخدم التطبيق أسماء مدرسة أو مسؤولين افتراضيين.
+
+## التحقق قبل التغيير
+
+```bash
+flutter analyze
+flutter test
+```
+
+## المسار التالي
+
+قاعدة البيانات التي يستخدمها التطبيق حاليًا هي SQLite ضمن المسار التشغيلي. سيجري توحيد البنية وقاعدة البيانات، وتطوير المزامنة ثنائية الاتجاه، في تحديثات منفصلة ومدروسة حتى تبقى النسخة الحالية قابلة للاستخدام.

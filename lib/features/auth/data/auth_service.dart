@@ -1,4 +1,5 @@
 import '../../../core/security/security_storage.dart';
+import '../../settings/data/models/school_profile_model.dart';
 import 'models/auth_user_model.dart';
 import 'repositories/auth_repository.dart';
 
@@ -10,7 +11,9 @@ class AuthService {
       : _repository = repository ?? AuthRepository(),
         _storage = storage ?? SecurityStorage();
 
-  Future<void> initialize() => _repository.ensureDefaultUsers();
+  Future<void> initialize() async {}
+
+  Future<bool> requiresInitialSetup() => _repository.requiresInitialSetup();
 
   Future<AuthUserModel?> currentUser() async {
     final username = await _storage.readCurrentUsername();
@@ -27,6 +30,22 @@ class AuthService {
   }
 
   Future<void> logout() => _storage.clearSession();
+
+  Future<AuthUserModel> completeInitialSetup({
+    required String username,
+    required String fullName,
+    required String password,
+    required SchoolProfileModel schoolProfile,
+  }) async {
+    final user = await _repository.completeInitialSetup(
+      username: username,
+      fullName: fullName,
+      password: password,
+      schoolProfile: schoolProfile,
+    );
+    await _storage.saveCurrentUsername(user.username);
+    return user;
+  }
 
   Future<List<AuthUserModel>> getUsers() => _repository.getUsers();
 

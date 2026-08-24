@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "140008748323",
-    "project_id": "personal-finance-app-93904",
-    "storage_bucket": "personal-finance-app-93904.firebasestorage.app"
+    "project_number": "1087008145053",
+    "project_id": "school-secretariat-app",
+    "storage_bucket": "school-secretariat-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:140008748323:android:cc010bbef713a682c40896",
+        "mobilesdk_app_id": "1:1087008145053:android:edc37782785097be7b9e74",
         "android_client_info": {
           "package_name": "com.example.personal_finance_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBjDege1YyZxmU4VL8FesGFmRtfPSdzo38"
+          "current_key": "AIzaSyA3raQ88jkbFJtdRR6I78zzKi8pVZ1d1As"
         }
       ],
       "services": {

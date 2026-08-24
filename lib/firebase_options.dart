@@ -12,7 +12,9 @@ class DefaultFirebaseOptions {
       String.fromEnvironment('FIREBASE_STORAGE_BUCKET');
 
   static FirebaseOptions get currentPlatform {
-    if (!kIsWeb && defaultTargetPlatform != TargetPlatform.windows) {
+    if (!kIsWeb &&
+        defaultTargetPlatform != TargetPlatform.windows &&
+        defaultTargetPlatform != TargetPlatform.android) {
       throw UnsupportedError(
         'Firebase غير مهيأ لهذه المنصة. استخدم إعدادات Firebase الرسمية.',
       );

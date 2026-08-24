@@ -18,21 +18,21 @@ class PdfService {
   }) async {
     final pdf = pw.Document();
     final profile = await SchoolProfileRepository().getProfile();
-    final resolvedSchoolName = _valueOrDefault(
+    final resolvedSchoolName = _requiredValue(
       schoolName ?? profile.schoolName,
-      'مدرسة الأمل الخاصة',
+      'اسم المدرسة',
     );
-    final resolvedGovernorate = _valueOrDefault(
+    final resolvedGovernorate = _requiredValue(
       governorate ?? profile.governorate,
-      'دمشق',
+      'المحافظة',
     );
-    final resolvedDirectorName = _valueOrDefault(
+    final resolvedDirectorName = _requiredValue(
       directorName ?? profile.directorName,
-      'أحمد العلي',
+      'اسم المدير',
     );
-    final resolvedSecretaryName = _valueOrDefault(
+    final resolvedSecretaryName = _requiredValue(
       secretaryName ?? profile.secretaryName,
-      'محمد خليل',
+      'اسم أمين السر',
     );
     final documentSerial = _documentSerial(student, 'sequence');
     final verificationToken = DocumentVerificationService.createToken(
@@ -148,9 +148,9 @@ class PdfService {
   }) async {
     final pdf = pw.Document();
     final profile = await SchoolProfileRepository().getProfile();
-    final resolvedSchoolName = _valueOrDefault(
+    final resolvedSchoolName = _requiredValue(
       schoolName ?? profile.schoolName,
-      'مدرسة الأمل الخاصة',
+      'اسم المدرسة',
     );
     final font = await PdfGoogleFonts.cairoRegular();
     final fontBold = await PdfGoogleFonts.cairoBold();
@@ -269,8 +269,14 @@ class PdfService {
     return pdf.save();
   }
 
-  static String _valueOrDefault(String value, String fallback) {
-    return value.trim().isEmpty ? fallback : value.trim();
+  static String _requiredValue(String value, String fieldName) {
+    final trimmedValue = value.trim();
+    if (trimmedValue.isEmpty) {
+      throw StateError(
+        'لا يمكن إصدار الوثيقة قبل إدخال $fieldName من إعدادات المدرسة.',
+      );
+    }
+    return trimmedValue;
   }
 
   static String _documentSerial(StudentModel student, String documentType) {

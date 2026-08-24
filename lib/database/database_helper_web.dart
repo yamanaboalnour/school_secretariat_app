@@ -12,7 +12,7 @@ class DatabaseHelper {
     databaseFactory = databaseFactoryFfiWeb;
     _database = await openDatabase(
       'school_secretariat_web.db',
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -57,6 +57,7 @@ class DatabaseHelper {
     if (oldVersion < 4) await _createUsersTable(db);
     if (oldVersion < 5) await _createSyncQueueTable(db);
     if (oldVersion < 6) await _createAttendanceTable(db);
+    if (oldVersion < 7) await _addPasswordAlgorithmColumn(db);
   }
 
   Future<void> _createSchoolProfileTable(Database db) async {
@@ -93,11 +94,18 @@ class DatabaseHelper {
         full_name TEXT NOT NULL,
         password_hash TEXT NOT NULL,
         salt TEXT NOT NULL,
+        password_algorithm TEXT NOT NULL DEFAULT 'pbkdf2_sha256_v1',
         role TEXT NOT NULL,
         is_active INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     ''');
+  }
+
+  Future<void> _addPasswordAlgorithmColumn(Database db) async {
+    await db.execute(
+      "ALTER TABLE users ADD COLUMN password_algorithm TEXT NOT NULL DEFAULT 'sha256'",
+    );
   }
 
   Future<void> _createSyncQueueTable(Database db) async {

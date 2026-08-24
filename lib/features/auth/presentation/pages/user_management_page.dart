@@ -55,7 +55,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                     controller: passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      labelText: 'كلمة المرور (8 محارف على الأقل)',
+                      labelText: 'كلمة المرور (12 محرفًا على الأقل)',
                     ),
                   ),
                   DropdownButtonFormField<String>(

@@ -42,6 +42,37 @@ class GradeRepository {
 
   Future<int> deleteGrade(int id) async {
     final database = await _databaseHelper.database;
-    return database.delete('grades', where: 'id = ?', whereArgs: [id]);
+    return database.transaction((transaction) async {
+      final rows = await transaction.query(
+        'grades',
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      if (rows.isEmpty) return 0;
+
+      final grade = GradeModel.fromMap(rows.first);
+      final deleted = await transaction.delete(
+        'grades',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      if (deleted > 0) {
+        await transaction.insert('sync_queue', {
+          'entity_type': 'grade',
+          'entity_id': '${grade.studentId}_${grade.subjectName}',
+          'operation': 'delete',
+          'payload': jsonEncode({
+            'id': grade.id,
+            'student_id': grade.studentId,
+            'subject_name': grade.subjectName,
+          }),
+          'status': 'pending',
+          'attempts': 0,
+          'created_at': DateTime.now().toUtc().toIso8601String(),
+        });
+      }
+      return deleted;
+    });
   }
 }

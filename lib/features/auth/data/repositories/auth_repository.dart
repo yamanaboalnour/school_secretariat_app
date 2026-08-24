@@ -2,32 +2,83 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../../core/security/hash_helper.dart';
 import '../../../../database/database_helper.dart';
+import '../../../settings/data/models/school_profile_model.dart';
 import '../models/auth_user_model.dart';
 
 class AuthRepository {
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
-  Future<void> ensureDefaultUsers() async {
+  Future<bool> requiresInitialSetup() async {
     final database = await _databaseHelper.database;
     final countRows =
         await database.rawQuery('SELECT COUNT(*) AS count FROM users');
     final count = (countRows.first['count'] as int?) ?? 0;
-    if (count > 0) return;
+    if (count == 0) return true;
 
-    await database.transaction((transaction) async {
-      await _insertUser(
-        transaction,
-        username: 'admin',
-        fullName: 'مدير المدرسة',
-        password: 'admin123',
-        role: 'ADMIN',
+    final legacyDefaultRows = await database.rawQuery('''
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE password_algorithm = ?
+        AND ((username = ? AND full_name = ?)
+          OR (username = ? AND full_name = ?))
+    ''', [
+      HashHelper.legacySha256,
+      'admin',
+      'مدير المدرسة',
+      'secretary',
+      'أمين السر',
+    ]);
+    final legacyDefaultCount =
+        (legacyDefaultRows.first['count'] as int?) ?? 0;
+    return legacyDefaultCount == count;
+  }
+
+  Future<AuthUserModel> completeInitialSetup({
+    required String username,
+    required String fullName,
+    required String password,
+    required SchoolProfileModel schoolProfile,
+  }) async {
+    final normalizedUsername = _validateUserDetails(
+      username: username,
+      fullName: fullName,
+      password: password,
+    );
+    _validateSchoolProfile(schoolProfile);
+
+    final salt = HashHelper.generateSalt();
+    final passwordHash = await HashHelper.hashPassword(password, salt);
+    final database = await _databaseHelper.database;
+
+    return database.transaction((transaction) async {
+      final countRows =
+          await transaction.rawQuery('SELECT COUNT(*) AS count FROM users');
+      final count = (countRows.first['count'] as int?) ?? 0;
+      if (count > 0 && !await _transactionHasOnlyLegacyDefaultUsers(transaction)) {
+        throw StateError('تم إعداد التطبيق مسبقًا.');
+      }
+
+      await transaction.delete('users');
+      final id = await transaction.insert('users', {
+        'username': normalizedUsername,
+        'full_name': fullName.trim(),
+        'password_hash': passwordHash,
+        'salt': salt,
+        'password_algorithm': HashHelper.pbkdf2Sha256V1,
+        'role': 'ADMIN',
+        'is_active': 1,
+      });
+      await transaction.insert(
+        'school_profile',
+        schoolProfile.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      await _insertUser(
-        transaction,
-        username: 'secretary',
-        fullName: 'أمين السر',
-        password: 'secretary123',
-        role: 'SECRETARY',
+      return AuthUserModel(
+        id: id,
+        username: normalizedUsername,
+        fullName: fullName.trim(),
+        role: 'ADMIN',
+        isActive: true,
       );
     });
   }
@@ -43,6 +94,7 @@ class AuthRepository {
         'role',
         'password_hash',
         'salt',
+        'password_algorithm',
       ],
       where: 'username = ? AND is_active = 1',
       whereArgs: [username.trim()],
@@ -51,11 +103,23 @@ class AuthRepository {
     if (rows.isEmpty) return null;
 
     final user = rows.first;
-    final hash = HashHelper.hashPassword(
-      password,
-      user['salt'] as String,
+    final algorithm =
+        user['password_algorithm'] as String? ?? HashHelper.legacySha256;
+    final passwordMatches = await HashHelper.verifyPassword(
+      password: password,
+      salt: user['salt'] as String,
+      passwordHash: user['password_hash'] as String,
+      algorithm: algorithm,
     );
-    if (hash != user['password_hash']) return null;
+    if (!passwordMatches) return null;
+
+    if (algorithm != HashHelper.pbkdf2Sha256V1) {
+      await _upgradeLegacyPassword(
+        database: database,
+        userId: user['id'] as int,
+        password: password,
+      );
+    }
     return AuthUserModel.fromMap(user);
   }
 
@@ -87,22 +151,20 @@ class AuthRepository {
     required String password,
     required String role,
   }) async {
-    final normalizedUsername = username.trim();
-    if (normalizedUsername.isEmpty || password.length < 8) {
-      throw const FormatException(
-        'اسم المستخدم مطلوب وكلمة المرور يجب أن تكون 8 محارف على الأقل.',
-      );
-    }
-    if (fullName.trim().isEmpty) {
-      throw const FormatException('الاسم الكامل مطلوب.');
-    }
+    final normalizedUsername = _validateUserDetails(
+      username: username,
+      fullName: fullName,
+      password: password,
+    );
     final database = await _databaseHelper.database;
     final salt = HashHelper.generateSalt();
+    final passwordHash = await HashHelper.hashPassword(password, salt);
     await database.insert('users', {
       'username': normalizedUsername,
       'full_name': fullName.trim(),
-      'password_hash': HashHelper.hashPassword(password, salt),
+      'password_hash': passwordHash,
       'salt': salt,
+      'password_algorithm': HashHelper.pbkdf2Sha256V1,
       'role': role,
       'is_active': 1,
     });
@@ -113,14 +175,13 @@ class AuthRepository {
     required String currentPassword,
     required String newPassword,
   }) async {
-    if (newPassword.length < 8) {
-      throw const FormatException(
-          'كلمة المرور الجديدة يجب أن تكون 8 محارف على الأقل.');
+    if (!HashHelper.isValidNewPassword(newPassword)) {
+      throw FormatException(HashHelper.newPasswordValidationMessage());
     }
     final database = await _databaseHelper.database;
     final rows = await database.query(
       'users',
-      columns: ['id', 'password_hash', 'salt'],
+      columns: ['id', 'password_hash', 'salt', 'password_algorithm'],
       where: 'username = ? AND is_active = 1',
       whereArgs: [username],
       limit: 1,
@@ -128,20 +189,26 @@ class AuthRepository {
     if (rows.isEmpty) throw const FormatException('المستخدم غير موجود.');
 
     final user = rows.first;
-    final currentHash = HashHelper.hashPassword(
-      currentPassword,
-      user['salt'] as String,
+    final algorithm =
+        user['password_algorithm'] as String? ?? HashHelper.legacySha256;
+    final passwordMatches = await HashHelper.verifyPassword(
+      password: currentPassword,
+      salt: user['salt'] as String,
+      passwordHash: user['password_hash'] as String,
+      algorithm: algorithm,
     );
-    if (currentHash != user['password_hash']) {
+    if (!passwordMatches) {
       throw const FormatException('كلمة المرور الحالية غير صحيحة.');
     }
 
     final salt = HashHelper.generateSalt();
+    final passwordHash = await HashHelper.hashPassword(newPassword, salt);
     await database.update(
       'users',
       {
-        'password_hash': HashHelper.hashPassword(newPassword, salt),
+        'password_hash': passwordHash,
         'salt': salt,
+        'password_algorithm': HashHelper.pbkdf2Sha256V1,
       },
       where: 'id = ?',
       whereArgs: [user['id']],
@@ -177,21 +244,67 @@ class AuthRepository {
     );
   }
 
-  Future<void> _insertUser(
-    Transaction transaction, {
+  Future<void> _upgradeLegacyPassword({
+    required Database database,
+    required int userId,
+    required String password,
+  }) async {
+    final salt = HashHelper.generateSalt();
+    final passwordHash = await HashHelper.hashPassword(password, salt);
+    await database.update('users', {
+      'password_hash': passwordHash,
+      'salt': salt,
+      'password_algorithm': HashHelper.pbkdf2Sha256V1,
+    }, where: 'id = ?', whereArgs: [userId]);
+  }
+
+  String _validateUserDetails({
     required String username,
     required String fullName,
     required String password,
-    required String role,
-  }) async {
-    final salt = HashHelper.generateSalt();
-    await transaction.insert('users', {
-      'username': username,
-      'full_name': fullName,
-      'password_hash': HashHelper.hashPassword(password, salt),
-      'salt': salt,
-      'role': role,
-      'is_active': 1,
-    });
+  }) {
+    final normalizedUsername = username.trim();
+    if (normalizedUsername.isEmpty) {
+      throw const FormatException('اسم المستخدم مطلوب.');
+    }
+    if (fullName.trim().isEmpty) {
+      throw const FormatException('الاسم الكامل مطلوب.');
+    }
+    if (!HashHelper.isValidNewPassword(password)) {
+      throw FormatException(HashHelper.newPasswordValidationMessage());
+    }
+    return normalizedUsername;
+  }
+
+  void _validateSchoolProfile(SchoolProfileModel profile) {
+    if (profile.schoolName.trim().isEmpty ||
+        profile.governorate.trim().isEmpty ||
+        profile.directorName.trim().isEmpty ||
+        profile.secretaryName.trim().isEmpty) {
+      throw const FormatException('يرجى إدخال جميع معلومات المدرسة.');
+    }
+  }
+
+  Future<bool> _transactionHasOnlyLegacyDefaultUsers(
+    Transaction transaction,
+  ) async {
+    final countRows =
+        await transaction.rawQuery('SELECT COUNT(*) AS count FROM users');
+    final count = (countRows.first['count'] as int?) ?? 0;
+    final legacyRows = await transaction.rawQuery('''
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE password_algorithm = ?
+        AND ((username = ? AND full_name = ?)
+          OR (username = ? AND full_name = ?))
+    ''', [
+      HashHelper.legacySha256,
+      'admin',
+      'مدير المدرسة',
+      'secretary',
+      'أمين السر',
+    ]);
+    final legacyCount = (legacyRows.first['count'] as int?) ?? 0;
+    return count > 0 && count == legacyCount;
   }
 }

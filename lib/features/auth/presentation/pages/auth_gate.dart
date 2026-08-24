@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../data/auth_service.dart';
 import '../../../../presentation/auth/screens/login_screen.dart';
+import 'initial_setup_page.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -13,7 +14,7 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   final AuthService _authService = AuthService();
-  Future<bool>? _initialization;
+  Future<_AuthDestination>? _initialization;
 
   @override
   void initState() {
@@ -21,14 +22,19 @@ class _AuthGateState extends State<AuthGate> {
     _initialization = _initialize();
   }
 
-  Future<bool> _initialize() async {
+  Future<_AuthDestination> _initialize() async {
     await _authService.initialize();
-    return (await _authService.currentUser()) != null;
+    if (await _authService.requiresInitialSetup()) {
+      return _AuthDestination.initialSetup;
+    }
+    return (await _authService.currentUser()) != null
+        ? _AuthDestination.dashboard
+        : _AuthDestination.login;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
+    return FutureBuilder<_AuthDestination>(
       future: _initialization,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -36,8 +42,17 @@ class _AuthGateState extends State<AuthGate> {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        return snapshot.data! ? const DashboardPage() : const LoginScreen();
+        switch (snapshot.data!) {
+          case _AuthDestination.initialSetup:
+            return const InitialSetupPage();
+          case _AuthDestination.dashboard:
+            return const DashboardPage();
+          case _AuthDestination.login:
+            return const LoginScreen();
+        }
       },
     );
   }
 }
+
+enum _AuthDestination { initialSetup, dashboard, login }
