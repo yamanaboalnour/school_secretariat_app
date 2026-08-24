@@ -16,6 +16,7 @@ import '../../../../core/sync/firebase_initializer.dart';
 import '../../../../core/sync/repositories/sync_queue_repository.dart';
 import '../../../../core/sync/sync_service.dart';
 import '../../../../core/sync/transports/firestore_sync_transport.dart';
+import '../../../academic_sequence/presentation/pages/academic_sequence_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
