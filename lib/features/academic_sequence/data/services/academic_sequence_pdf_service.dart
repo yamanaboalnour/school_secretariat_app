@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/academic_sequence_model.dart';
 
@@ -21,10 +22,10 @@ class AcademicSequencePdfService {
     AcademicStudent student,
   ) async {
     final fontData = await rootBundle.load(
-      'assets/fonts/Amiri-Regular.ttf',
+      'assets/fonts/trad_ar.ttf',
     );
 
-    final font = pw.Font.ttf(fontData);
+    final traditionalArabic = pw.Font.ttf(fontData);
 
     final document = pw.Document();
 
@@ -226,5 +227,13 @@ class AcademicSequencePdfService {
         ),
       ),
     );
+  }
+
+  static const String _serialKey = 'academic_sequence_document_serial';
+
+  static Future<int> peekNextSerial() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    return (prefs.getInt(_serialKey) ?? 0) + 1;
   }
 }

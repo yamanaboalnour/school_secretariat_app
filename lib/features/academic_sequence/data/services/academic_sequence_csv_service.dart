@@ -10,21 +10,38 @@ class AcademicSequenceCsvService {
       'assets/Record the results of the years for students.csv';
 
   Future<List<AcademicStudent>> loadStudents() async {
-    final studentsCsv = await rootBundle.loadString(studentsAsset);
-    final historyCsv = await rootBundle.loadString(academicHistoryAsset);
+    final historyCsv = await rootBundle.loadString(
+      academicHistoryAsset,
+    );
 
-    final studentsRows = _parse(studentsCsv);
     final historyRows = _parse(historyCsv);
 
-    if (studentsRows.isEmpty) {
-      throw Exception('ملف الطلاب فارغ.');
+    if (historyRows.length < 2) {
+      throw Exception(
+        'ملف النتائج الدراسية فارغ أو لا يحتوي على بيانات.',
+      );
     }
 
-    if (historyRows.isEmpty) {
-      throw Exception('ملف النتائج الدراسية فارغ.');
+    Map<String, Map<String, String>> students = {};
+
+    // students.csv اختياري حاليًا.
+    // إذا كان الملف فارغًا أو غير صالح، نكمل من ملف النتائج.
+    try {
+      final studentsCsv = await rootBundle.loadString(
+        studentsAsset,
+      );
+
+      if (studentsCsv.trim().isNotEmpty) {
+        final studentRows = _parse(studentsCsv);
+
+        if (studentRows.length >= 2) {
+          students = _buildStudentIndex(studentRows);
+        }
+      }
+    } catch (_) {
+      // تجاهل الخطأ مؤقتًا والاعتماد على ملف النتائج.
     }
 
-    final students = _buildStudentIndex(studentsRows);
     final history = _buildHistoryIndex(historyRows);
 
     final result = <AcademicStudent>[];
@@ -32,21 +49,29 @@ class AcademicSequenceCsvService {
     for (final item in history.values) {
       final student = students[item.studentNumber];
 
-      final mergedFirstName = student?['firstName'] ?? item.firstName;
+      final firstName = student?['firstName']?.trim().isNotEmpty == true
+          ? student!['firstName']!
+          : item.firstName;
 
-      final mergedLastName = student?['lastName'] ?? item.lastName;
+      final lastName = student?['lastName']?.trim().isNotEmpty == true
+          ? student!['lastName']!
+          : item.lastName;
 
-      final mergedGrade = student?['grade'] ?? item.currentGrade;
+      final currentGrade = student?['grade']?.trim().isNotEmpty == true
+          ? student!['grade']!
+          : item.currentGrade;
 
-      final mergedSection = student?['section'] ?? item.section;
+      final section = student?['section']?.trim().isNotEmpty == true
+          ? student!['section']!
+          : item.section;
 
       result.add(
         AcademicStudent(
           studentNumber: item.studentNumber,
-          firstName: mergedFirstName,
-          lastName: mergedLastName,
-          currentGrade: mergedGrade,
-          section: mergedSection,
+          firstName: firstName,
+          lastName: lastName,
+          currentGrade: currentGrade,
+          section: section,
           records: item.records,
         ),
       );
@@ -67,10 +92,10 @@ class AcademicSequenceCsvService {
   }
 
   List<List<dynamic>> _parse(String source) {
-    var normalized = source.replaceFirst('\uFEFF', '');
-
-    normalized = normalized.replaceAll('\r\n', '\n');
-    normalized = normalized.replaceAll('\r', '\n');
+    final normalized = source
+        .replaceFirst('\uFEFF', '')
+        .replaceAll('\r\n', '\n')
+        .replaceAll('\r', '\n');
 
     return const CsvToListConverter(
       fieldDelimiter: ';',
@@ -86,11 +111,7 @@ class AcademicSequenceCsvService {
       return {};
     }
 
-    final headers = rows.first
-        .map(
-          (e) => e.toString().trim(),
-        )
-        .toList();
+    final headers = rows.first.map((e) => e.toString().trim()).toList();
 
     final numberIndex = _findColumn(
       headers,
@@ -98,10 +119,13 @@ class AcademicSequenceCsvService {
         'NoStudents',
         'NoStudent',
         'رقم الطالب',
-        'رقم الطالب الوطني',
-        'الرقم',
+        'رقم',
       ],
     );
+
+    if (numberIndex == -1) {
+      return {};
+    }
 
     final firstNameIndex = _findColumn(
       headers,
@@ -141,12 +165,6 @@ class AcademicSequenceCsvService {
       ],
     );
 
-    if (numberIndex == -1) {
-      throw Exception(
-        'لم يتم العثور على عمود رقم الطالب في students.csv',
-      );
-    }
-
     final result = <String, Map<String, String>>{};
 
     for (final row in rows.skip(1)) {
@@ -170,44 +188,50 @@ class AcademicSequenceCsvService {
   Map<String, _HistoryStudent> _buildHistoryIndex(
     List<List<dynamic>> rows,
   ) {
-    if (rows.length < 2) {
-      return {};
-    }
-
-    final headers = rows.first
-        .map(
-          (e) => e.toString().trim(),
-        )
-        .toList();
+    final headers = rows.first.map((e) => e.toString().trim()).toList();
 
     final numberIndex = _findColumn(
       headers,
-      const ['NoStudents', 'NoStudent'],
+      const [
+        'NoStudents',
+        'NoStudent',
+        'رقم الطالب',
+      ],
     );
 
     final firstNameIndex = _findColumn(
       headers,
-      const ['اسم الطالب'],
+      const [
+        'اسم الطالب',
+        'الاسم',
+      ],
     );
 
     final lastNameIndex = _findColumn(
       headers,
-      const ['كنية الطالب'],
+      const [
+        'كنية الطالب',
+        'الكنية',
+      ],
     );
 
     final gradeIndex = _findColumn(
       headers,
-      const ['الصف'],
+      const [
+        'الصف',
+      ],
     );
 
     final sectionIndex = _findColumn(
       headers,
-      const ['الشعبة'],
+      const [
+        'الشعبة',
+      ],
     );
 
     if (numberIndex == -1) {
       throw Exception(
-        'لم يتم العثور على NoStudents في ملف النتائج الدراسية.',
+        'لم يتم العثور على عمود NoStudents في ملف النتائج الدراسية.',
       );
     }
 

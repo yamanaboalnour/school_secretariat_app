@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'database/database_helper.dart';
-import 'features/auth/presentation/pages/auth_gate.dart';
 
-void main() async {
+import 'features/academic_sequence/presentation/pages/academic_sequence_page.dart';
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper.instance.database;
-  runApp(const SchoolSecretariatApp());
+
+  runApp(
+    const SchoolSecretariatApp(),
+  );
 }
 
 class SchoolSecretariatApp extends StatelessWidget {
@@ -17,10 +19,12 @@ class SchoolSecretariatApp extends StatelessWidget {
       title: 'أمانة السر المدرسية',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+        ),
         useMaterial3: true,
       ),
-      home: const AuthGate(),
+      home: const AcademicSequencePage(),
     );
   }
 }

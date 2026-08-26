@@ -12,10 +12,6 @@ import '../../../students/data/repositories/student_repository.dart';
 import '../../../students/presentation/bloc/student_bloc.dart';
 import '../../../students/presentation/pages/students_list_page.dart';
 import '../../../../database/database_helper.dart';
-import '../../../../core/sync/firebase_initializer.dart';
-import '../../../../core/sync/repositories/sync_queue_repository.dart';
-import '../../../../core/sync/sync_service.dart';
-import '../../../../core/sync/transports/firestore_sync_transport.dart';
 import '../../../academic_sequence/presentation/pages/academic_sequence_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -34,16 +30,13 @@ class _DashboardPageState extends State<DashboardPage> {
   int _documentCount = 0;
   Map<String, int> _studentsByGrade = {};
   AuthUserModel? _currentUser;
-  final SyncQueueRepository _syncQueue = SyncQueueRepository();
   int _pendingSyncCount = 0;
-  bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
     _loadCurrentUser();
     _loadStatistics();
-    _loadPendingSyncCount();
   }
 
   Future<void> _loadPendingSyncCount() async {
