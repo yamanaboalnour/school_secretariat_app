@@ -65,4 +65,5 @@ flutter:
     - assets/students.csv
     - "assets/Record the results of the years for students.csv"
     - assets/fonts/Amiri-Regular.ttf
-    - assets/fonts/trad_ar.ttf
+    - assets/fonts/traditional_arabic.ttf
+    - assets/fonts/traditional_arabic_bold.ttf

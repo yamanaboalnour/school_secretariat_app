@@ -1,12 +1,19 @@
 class StudentModel {
   final int? id;
+
   final String firstName;
   final String lastName;
+
   final String fatherName;
   final String motherName;
+
   final String? nationalId;
+
+  final String? birthPlace;
   final String? birthDate;
+
   final String gradeLevel;
+
   final String registrationDate;
   final String createdAt;
 
@@ -17,6 +24,7 @@ class StudentModel {
     required this.fatherName,
     required this.motherName,
     this.nationalId,
+    this.birthPlace,
     this.birthDate,
     required this.gradeLevel,
     required this.registrationDate,
@@ -31,6 +39,7 @@ class StudentModel {
       'father_name': fatherName,
       'mother_name': motherName,
       'national_id': nationalId,
+      'birth_place': birthPlace,
       'birth_date': birthDate,
       'grade_level': gradeLevel,
       'registration_date': registrationDate,
@@ -41,15 +50,16 @@ class StudentModel {
   factory StudentModel.fromMap(Map<String, dynamic> map) {
     return StudentModel(
       id: map['id'],
-      firstName: map['first_name'],
-      lastName: map['last_name'],
-      fatherName: map['father_name'],
-      motherName: map['mother_name'],
+      firstName: map['first_name'] ?? '',
+      lastName: map['last_name'] ?? '',
+      fatherName: map['father_name'] ?? '',
+      motherName: map['mother_name'] ?? '',
       nationalId: map['national_id'],
+      birthPlace: map['birth_place'],
       birthDate: map['birth_date'],
-      gradeLevel: map['grade_level'],
-      registrationDate: map['registration_date'],
-      createdAt: map['created_at'],
+      gradeLevel: map['grade_level'] ?? '',
+      registrationDate: map['registration_date'] ?? '',
+      createdAt: map['created_at'] ?? '',
     );
   }
 }
