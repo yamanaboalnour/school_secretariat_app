@@ -5,11 +5,11 @@ enum TeacherRole { admin, secretary, teacher }
 class TeacherModel {
   final String id;
   final String fullName;
-  final String subject;       // المادة المدرسة (مثل: رياضيات، فيزياء)
+  final String subject; // المادة المدرسة (مثل: رياضيات، فيزياء)
   final String phone;
   final String email;
-  final TeacherRole role;     // دور المستخدم وصلاحياته
-  final int weeklyClasses;   // النصاب الأسبوعي للحصص
+  final TeacherRole role; // دور المستخدم وصلاحياته
+  final int weeklyClasses; // النصاب الأسبوعي للحصص
   final DateTime createdAt;
 
   TeacherModel({

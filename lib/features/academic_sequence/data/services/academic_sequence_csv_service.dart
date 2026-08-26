@@ -1,7 +1,7 @@
 import 'package:csv/csv.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../data/models/academic_sequence_model.dart';
+import '../models/academic_sequence_model.dart';
 
 class AcademicSequenceCsvService {
   static const String studentsAsset = 'assets/students.csv';

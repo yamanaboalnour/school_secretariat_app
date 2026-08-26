@@ -38,7 +38,8 @@ class _AddStudentPageState extends State<AddStudentPage> {
                 ),
                 TextFormField(
                   controller: _lastNameController,
-                  decoration: const InputDecoration(labelText: 'النسبة / الكنية *'),
+                  decoration:
+                      const InputDecoration(labelText: 'النسبة / الكنية *'),
                   validator: (v) => v!.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
                 TextFormField(
@@ -53,11 +54,13 @@ class _AddStudentPageState extends State<AddStudentPage> {
                 ),
                 TextFormField(
                   controller: _nationalIdController,
-                  decoration: const InputDecoration(labelText: 'الرقم الوطني / السجل'),
+                  decoration:
+                      const InputDecoration(labelText: 'الرقم الوطني / السجل'),
                 ),
                 TextFormField(
                   controller: _gradeLevelController,
-                  decoration: const InputDecoration(labelText: 'الصف / المرحلة الدراسية *'),
+                  decoration: const InputDecoration(
+                      labelText: 'الصف / المرحلة الدراسية *'),
                   validator: (v) => v!.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
                 const SizedBox(height: 24),
@@ -69,12 +72,16 @@ class _AddStudentPageState extends State<AddStudentPage> {
                         lastName: _lastNameController.text,
                         fatherName: _fatherNameController.text,
                         motherName: _motherNameController.text,
-                        nationalId: _nationalIdController.text.isEmpty ? null : _nationalIdController.text,
+                        nationalId: _nationalIdController.text.isEmpty
+                            ? null
+                            : _nationalIdController.text,
                         gradeLevel: _gradeLevelController.text,
                         registrationDate: DateTime.now().toIso8601String(),
                         createdAt: DateTime.now().toIso8601String(),
                       );
-                      context.read<StudentBloc>().add(AddStudentEvent(newStudent));
+                      context
+                          .read<StudentBloc>()
+                          .add(AddStudentEvent(newStudent));
                       Navigator.pop(context);
                     }
                   },

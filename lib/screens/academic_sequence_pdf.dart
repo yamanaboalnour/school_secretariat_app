@@ -25,13 +25,11 @@ class AcademicSequencePdfScreen extends StatelessWidget {
     );
   }
 
-  Future<Uint8List> _generatePdf(
-      PdfPageFormat format, Student student) async {
+  Future<Uint8List> _generatePdf(PdfPageFormat format, Student student) async {
     final pdf = pw.Document();
 
     // تحميل خط عربي لدعم النص العربي بشكل صحيح
-    final fontData =
-        await rootBundle.load('assets/fonts/Amiri-Regular.ttf');
+    final fontData = await rootBundle.load('assets/fonts/Amiri-Regular.ttf');
     final ttf = pw.Font.ttf(fontData);
 
     pdf.addPage(

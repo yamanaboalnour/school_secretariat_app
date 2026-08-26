@@ -24,7 +24,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadIssuedCount() async {
     int nextSeq = await SequenceService.getNextSequenceNumber();
     setState(() {
-      _totalIssuedDocuments = nextSeq - 1000; // الإحصاء استناداً لبداية الترقيم من 1000
+      _totalIssuedDocuments =
+          nextSeq - 1000; // الإحصاء استناداً لبداية الترقيم من 1000
     });
   }
 
@@ -87,12 +88,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // 2. توزيع الطلاب حسب الصفوف
               const Text(
                 'توزيع الطلاب حسب الصفوف الدراسية',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryGreen),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: primaryGreen),
               ),
               const SizedBox(height: 12),
               Card(
                 elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -108,8 +113,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('الصف ${entry.key}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                Text('${entry.value} طالب (${(percentage * 100).toStringAsFixed(1)}%)'),
+                                Text('الصف ${entry.key}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                    '${entry.value} طالب (${(percentage * 100).toStringAsFixed(1)}%)'),
                               ],
                             ),
                             const SizedBox(height: 6),
@@ -152,7 +160,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 8),
             Text(
               value,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 4),
             Text(

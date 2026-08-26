@@ -30,9 +30,9 @@ class StudentsListScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final student = provider.students[index];
               return ListTile(
-
                 title: Text(student.fullName),
-                subtitle: Text('الصف: ${student.latestGrade} - الحالة: ${student.latestStatus}'),
+                subtitle: Text(
+                    'الصف: ${student.latestGrade} - الحالة: ${student.latestStatus}'),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -50,14 +50,16 @@ class StudentsListScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditStudentScreen(student: student),
+                            builder: (context) =>
+                                EditStudentScreen(student: student),
                           ),
                         );
                       },
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmDelete(context, provider, student),
+                      onPressed: () =>
+                          _confirmDelete(context, provider, student),
                     ),
                   ],
                 ),
@@ -69,7 +71,8 @@ class StudentsListScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, StudentProvider provider, Student student) {
+  void _confirmDelete(
+      BuildContext context, StudentProvider provider, Student student) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

@@ -17,7 +17,7 @@ class _TeachersScreenState extends State<TeachersScreen> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _classesController = TextEditingController();
-  
+
   TeacherRole _selectedRole = TeacherRole.teacher;
 
   @override
@@ -32,7 +32,8 @@ class _TeachersScreenState extends State<TeachersScreen> {
         onPressed: _showAddTeacherDialog,
         backgroundColor: Colors.teal,
         icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
-        label: const Text('إضافة مدرس/إداري', style: TextStyle(color: Colors.white)),
+        label: const Text('إضافة مدرس/إداري',
+            style: TextStyle(color: Colors.white)),
       ),
       body: StreamBuilder<List<TeacherModel>>(
         stream: _teacherService.getAllTeachers(),
@@ -66,7 +67,8 @@ class _TeachersScreenState extends State<TeachersScreen> {
                       backgroundColor: Colors.teal.shade100,
                       child: Text(
                         teacher.fullName.isNotEmpty ? teacher.fullName[0] : 'م',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.teal),
                       ),
                     ),
                     title: Text(
@@ -78,7 +80,8 @@ class _TeachersScreenState extends State<TeachersScreen> {
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.redAccent),
-                      onPressed: () => _teacherService.deleteTeacher(teacher.id),
+                      onPressed: () =>
+                          _teacherService.deleteTeacher(teacher.id),
                     ),
                   ),
                 );
@@ -105,7 +108,8 @@ class _TeachersScreenState extends State<TeachersScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('إضافة عضو جديد بالكادر', textAlign: TextAlign.center),
+        title:
+            const Text('إضافة عضو جديد بالكادر', textAlign: TextAlign.center),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -124,23 +128,29 @@ class _TeachersScreenState extends State<TeachersScreen> {
               ),
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
+                decoration:
+                    const InputDecoration(labelText: 'البريد الإلكتروني'),
               ),
               TextField(
                 controller: _classesController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'عدد الحصص الأسبوعية (النصاب)'),
+                decoration: const InputDecoration(
+                    labelText: 'عدد الحصص الأسبوعية (النصاب)'),
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<TeacherRole>(
                 initialValue: _selectedRole,
                 items: const [
-                  DropdownMenuItem(value: TeacherRole.teacher, child: Text('مدرس')),
-                  DropdownMenuItem(value: TeacherRole.secretary, child: Text('أمين سر')),
-                  DropdownMenuItem(value: TeacherRole.admin, child: Text('مدير نظام')),
+                  DropdownMenuItem(
+                      value: TeacherRole.teacher, child: Text('مدرس')),
+                  DropdownMenuItem(
+                      value: TeacherRole.secretary, child: Text('أمين سر')),
+                  DropdownMenuItem(
+                      value: TeacherRole.admin, child: Text('مدير نظام')),
                 ],
                 onChanged: (val) => setState(() => _selectedRole = val!),
-                decoration: const InputDecoration(labelText: 'الصلاحية (الدور)'),
+                decoration:
+                    const InputDecoration(labelText: 'الصلاحية (الدور)'),
               ),
             ],
           ),

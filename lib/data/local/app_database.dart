@@ -12,7 +12,8 @@ class Users extends Table {
   TextColumn get fullName => text()();
   TextColumn get passwordHash => text()();
   TextColumn get salt => text()();
-  TextColumn get role => text().withDefault(const Constant('SECRETARY'))(); // ADMIN, SECRETARY
+  TextColumn get role =>
+      text().withDefault(const Constant('SECRETARY'))(); // ADMIN, SECRETARY
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

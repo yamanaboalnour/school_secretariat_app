@@ -33,7 +33,8 @@ class MainMenuScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AcademicSequencePdfScreen(student: student),
+                            builder: (context) =>
+                                AcademicSequencePdfScreen(student: student),
                           ),
                         );
                       },
@@ -49,7 +50,8 @@ class MainMenuScreen extends StatelessWidget {
               color: Colors.green,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('شاشة إضافة الطالب تحت التطوير')),
+                  const SnackBar(
+                      content: Text('شاشة إضافة الطالب تحت التطوير')),
                 );
               },
             ),

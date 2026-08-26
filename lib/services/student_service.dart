@@ -9,12 +9,9 @@ class StudentService {
     return [];
   }
 
-  static Future<void> addStudent(Student student) async {
-  }
+  static Future<void> addStudent(Student student) async {}
 
-  static Future<void> updateStudent(Student student) async {
-  }
+  static Future<void> updateStudent(Student student) async {}
 
-  static Future<void> deleteStudent(dynamic id) async {
-  }
+  static Future<void> deleteStudent(dynamic id) async {}
 }

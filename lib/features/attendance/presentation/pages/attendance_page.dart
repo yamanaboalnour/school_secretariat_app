@@ -23,8 +23,7 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _isSaving = false;
   String? _errorMessage;
 
-  String get _dateKey =>
-      '${_selectedDate.year.toString().padLeft(4, '0')}-'
+  String get _dateKey => '${_selectedDate.year.toString().padLeft(4, '0')}-'
       '${_selectedDate.month.toString().padLeft(2, '0')}-'
       '${_selectedDate.day.toString().padLeft(2, '0')}';
 
@@ -109,12 +108,14 @@ class _AttendancePageState extends State<AttendancePage> {
     }
   }
 
-  List<StudentModel> get _filteredStudents =>
-      _students.where((student) => student.gradeLevel == _selectedGrade).toList();
+  List<StudentModel> get _filteredStudents => _students
+      .where((student) => student.gradeLevel == _selectedGrade)
+      .toList();
 
   @override
   Widget build(BuildContext context) {
-    final grades = _students.map((student) => student.gradeLevel).toSet().toList();
+    final grades =
+        _students.map((student) => student.gradeLevel).toSet().toList();
     return Scaffold(
       appBar: AppBar(title: const Text('الحضور والغياب')),
       body: Directionality(
@@ -131,7 +132,9 @@ class _AttendancePageState extends State<AttendancePage> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                initialValue: _selectedGrade.isEmpty ? null : _selectedGrade,
+                                initialValue: _selectedGrade.isEmpty
+                                    ? null
+                                    : _selectedGrade,
                                 decoration: const InputDecoration(
                                   labelText: 'الصف',
                                   border: OutlineInputBorder(),
@@ -160,7 +163,8 @@ class _AttendancePageState extends State<AttendancePage> {
                       ),
                       Expanded(
                         child: _filteredStudents.isEmpty
-                            ? const Center(child: Text('لا يوجد طلاب في هذا الصف.'))
+                            ? const Center(
+                                child: Text('لا يوجد طلاب في هذا الصف.'))
                             : ListView.builder(
                                 itemCount: _filteredStudents.length,
                                 itemBuilder: (context, index) {
@@ -173,13 +177,18 @@ class _AttendancePageState extends State<AttendancePage> {
                                       vertical: 4,
                                     ),
                                     child: ListTile(
-                                      title: Text('${student.firstName} ${student.lastName}'),
+                                      title: Text(
+                                          '${student.firstName} ${student.lastName}'),
                                       subtitle: Text(student.fatherName),
-                                      trailing: DropdownButton<AttendanceStatus>(
+                                      trailing:
+                                          DropdownButton<AttendanceStatus>(
                                         value: status,
                                         onChanged: (value) {
-                                          if (value == null || student.id == null) return;
-                                          setState(() => _statusByStudent[student.id!] = value);
+                                          if (value == null ||
+                                              student.id == null) return;
+                                          setState(() =>
+                                              _statusByStudent[student.id!] =
+                                                  value);
                                         },
                                         items: const [
                                           DropdownMenuItem(

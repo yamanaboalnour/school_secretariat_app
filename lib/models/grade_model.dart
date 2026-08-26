@@ -4,11 +4,11 @@ class GradeModel {
   final String id;
   final String studentId;
   final String studentName;
-  final String subject;      // اسم المادة
-  final String term;         // الفصل الدراسي (الفصل الأول / الفصل الثاني)
-  final double examScore;    // درجة الامتحان
-  final double activityScore;// درجة النشاط/المذاكرة
-  final double maxScore;     // الدرجة العظمى للمادة
+  final String subject; // اسم المادة
+  final String term; // الفصل الدراسي (الفصل الأول / الفصل الثاني)
+  final double examScore; // درجة الامتحان
+  final double activityScore; // درجة النشاط/المذاكرة
+  final double maxScore; // الدرجة العظمى للمادة
 
   GradeModel({
     required this.id,

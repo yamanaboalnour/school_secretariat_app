@@ -24,7 +24,8 @@ class StudentsListPage extends StatelessWidget {
               final state = context.read<StudentBloc>().state;
               if (state is! StudentLoadedState || state.students.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('لا توجد بيانات طلاب لتصديرها.')),
+                  const SnackBar(
+                      content: Text('لا توجد بيانات طلاب لتصديرها.')),
                 );
                 return;
               }
@@ -90,7 +91,9 @@ class StudentsListPage extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (query) {
-                  context.read<StudentBloc>().add(LoadStudentsEvent(query: query));
+                  context
+                      .read<StudentBloc>()
+                      .add(LoadStudentsEvent(query: query));
                 },
               ),
             ),
@@ -101,20 +104,26 @@ class StudentsListPage extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   } else if (state is StudentLoadedState) {
                     if (state.students.isEmpty) {
-                      return const Center(child: Text('لا يوجد طلاب مسجلون حالياً.'));
+                      return const Center(
+                          child: Text('لا يوجد طلاب مسجلون حالياً.'));
                     }
                     return ListView.builder(
                       itemCount: state.students.length,
                       itemBuilder: (context, index) {
                         final student = state.students[index];
                         return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
                           child: ListTile(
                             leading: CircleAvatar(
-                              child: Text(student.firstName.isNotEmpty ? student.firstName[0] : '?'),
+                              child: Text(student.firstName.isNotEmpty
+                                  ? student.firstName[0]
+                                  : '?'),
                             ),
-                            title: Text('${student.firstName} ${student.lastName}'),
-                            subtitle: Text('الأب: ${student.fatherName} | الصف: ${student.gradeLevel}'),
+                            title: Text(
+                                '${student.firstName} ${student.lastName}'),
+                            subtitle: Text(
+                                'الأب: ${student.fatherName} | الصف: ${student.gradeLevel}'),
                             // --- أزرار التحكم بالسطر (الطباعة + الحذف) ---
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -122,40 +131,48 @@ class StudentsListPage extends StatelessWidget {
                                 IconButton(
                                   icon: const Icon(Icons.edit),
                                   tooltip: 'تعديل بيانات الطالب',
-                                  onPressed: () => _editStudent(context, student),
+                                  onPressed: () =>
+                                      _editStudent(context, student),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.grade, color: Colors.orange),
+                                  icon: const Icon(Icons.grade,
+                                      color: Colors.orange),
                                   tooltip: 'كشف العلامات والدرجات',
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => StudentGradesPage(student: student),
+                                        builder: (_) =>
+                                            StudentGradesPage(student: student),
                                       ),
                                     );
                                   },
                                 ),
                                 // زر الطباعة
                                 IconButton(
-                                  icon: const Icon(Icons.print, color: Colors.indigo),
+                                  icon: const Icon(Icons.print,
+                                      color: Colors.indigo),
                                   tooltip: 'طباعة وثيقة',
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => DocumentPreviewPage(student: student),
+                                        builder: (_) => DocumentPreviewPage(
+                                            student: student),
                                       ),
                                     );
                                   },
                                 ),
                                 // زر الحذف
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
                                   tooltip: 'حذف الطالب',
                                   onPressed: () {
                                     if (student.id != null) {
-                                      context.read<StudentBloc>().add(DeleteStudentEvent(student.id!));
+                                      context
+                                          .read<StudentBloc>()
+                                          .add(DeleteStudentEvent(student.id!));
                                     }
                                   },
                                 ),

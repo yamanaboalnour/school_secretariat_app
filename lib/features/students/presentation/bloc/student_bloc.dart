@@ -29,11 +29,14 @@ class UpdateStudentEvent extends StudentEvent {
 abstract class StudentState {}
 
 class StudentInitialState extends StudentState {}
+
 class StudentLoadingState extends StudentState {}
+
 class StudentLoadedState extends StudentState {
   final List<StudentModel> students;
   StudentLoadedState(this.students);
 }
+
 class StudentErrorState extends StudentState {
   final String message;
   StudentErrorState(this.message);

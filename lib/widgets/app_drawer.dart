@@ -21,7 +21,8 @@ class AppDrawer extends StatelessWidget {
             accountEmail: const Text('المستخدم الحالي: أمين السر'),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.school, size: 40, color: Colors.indigo.shade800),
+              child:
+                  Icon(Icons.school, size: 40, color: Colors.indigo.shade800),
             ),
           ),
           ListTile(
@@ -67,16 +68,16 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-  leading: const Icon(Icons.grade, color: Colors.purple),
-  title: const Text('كشوفات العلامات والجلاءات'),
-  onTap: () {
-    Navigator.pop(context);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const GradesScreen()),
-    );
-  },
-),
+            leading: const Icon(Icons.grade, color: Colors.purple),
+            title: const Text('كشوفات العلامات والجلاءات'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const GradesScreen()),
+              );
+            },
+          ),
         ],
       ),
     );

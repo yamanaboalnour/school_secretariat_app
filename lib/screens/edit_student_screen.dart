@@ -98,25 +98,33 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               children: [
                 TextFormField(
                   controller: _idController,
-                  enabled: !isEditing, // الرقم العام لا يُعدّل إذا كان كائناً موجهاً
-                  decoration: const InputDecoration(labelText: 'الرقم العام (ID)', border: OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+                  enabled:
+                      !isEditing, // الرقم العام لا يُعدّل إذا كان كائناً موجهاً
+                  decoration: const InputDecoration(
+                      labelText: 'الرقم العام (ID)',
+                      border: OutlineInputBorder()),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'الاسم الكامل', border: OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+                  decoration: const InputDecoration(
+                      labelText: 'الاسم الكامل', border: OutlineInputBorder()),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _fatherController,
-                  decoration: const InputDecoration(labelText: 'اسم الأب', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'اسم الأب', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _motherController,
-                  decoration: const InputDecoration(labelText: 'اسم الأم', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                      labelText: 'اسم الأم', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -124,14 +132,18 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _birthPlaceController,
-                        decoration: const InputDecoration(labelText: 'مكان الولادة', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'مكان الولادة',
+                            border: OutlineInputBorder()),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
                         controller: _birthDateController,
-                        decoration: const InputDecoration(labelText: 'تاريخ الولادة', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'تاريخ الولادة',
+                            border: OutlineInputBorder()),
                       ),
                     ),
                   ],
@@ -142,14 +154,18 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _gradeController,
-                        decoration: const InputDecoration(labelText: 'الصف الدراسي', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'الصف الدراسي',
+                            border: OutlineInputBorder()),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
                         controller: _statusController,
-                        decoration: const InputDecoration(labelText: 'الصفة / الوضع', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'الصفة / الوضع',
+                            border: OutlineInputBorder()),
                       ),
                     ),
                   ],
@@ -164,7 +180,8 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                   ),
                   child: Text(
                     isEditing ? 'حفظ التعديلات' : 'إضافة إلى قاعدة البيانات',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],

@@ -15,7 +15,8 @@ class BackupService {
     String password,
   ) async {
     if (password.length < 8) {
-      throw const FormatException('كلمة مرور النسخة يجب أن تكون 8 محارف على الأقل.');
+      throw const FormatException(
+          'كلمة مرور النسخة يجب أن تكون 8 محارف على الأقل.');
     }
     final database = await DatabaseHelper.instance.database;
     final integrity = await database.rawQuery('PRAGMA integrity_check');
@@ -42,7 +43,8 @@ class BackupService {
     final directory = Directory(destinationFolderPath);
     if (!await directory.exists()) await directory.create(recursive: true);
     final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-    final file = File(join(destinationFolderPath, 'school_backup_$timestamp.db.enc'));
+    final file =
+        File(join(destinationFolderPath, 'school_backup_$timestamp.db.enc'));
     return file.writeAsBytes(encryptedBytes, flush: true);
   }
 
@@ -55,7 +57,8 @@ class BackupService {
     }
     final file = File(backupFilePath);
     final bytes = await file.readAsBytes();
-    if (bytes.length <= _saltLength) throw const FormatException('النسخة المشفرة تالفة.');
+    if (bytes.length <= _saltLength)
+      throw const FormatException('النسخة المشفرة تالفة.');
 
     final salt = bytes.sublist(0, _saltLength);
     final box = SecretBox.fromConcatenation(
@@ -113,7 +116,8 @@ class BackupService {
     }
 
     final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-    final backupPath = join(destinationFolderPath, 'school_backup_$timestamp.db');
+    final backupPath =
+        join(destinationFolderPath, 'school_backup_$timestamp.db');
 
     return await dbFile.copy(backupPath);
   }

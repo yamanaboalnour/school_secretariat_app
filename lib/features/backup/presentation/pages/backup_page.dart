@@ -38,9 +38,11 @@ class _BackupPageState extends State<BackupPage> {
               ),
               const SizedBox(height: 30),
               ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
+                style:
+                    ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
                 icon: const Icon(Icons.download),
-                label: const Text('تصدير نسخة احتياطية الان', style: TextStyle(fontSize: 16)),
+                label: const Text('تصدير نسخة احتياطية الان',
+                    style: TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : () => _handleExport(context),
               ),
               const SizedBox(height: 20),
@@ -50,7 +52,8 @@ class _BackupPageState extends State<BackupPage> {
                   foregroundColor: Colors.red,
                 ),
                 icon: const Icon(Icons.upload),
-                label: const Text('استعادة نسخة احتياطية', style: TextStyle(fontSize: 16)),
+                label: const Text('استعادة نسخة احتياطية',
+                    style: TextStyle(fontSize: 16)),
                 onPressed: _isLoading ? null : () => _handleRestore(context),
               ),
               const SizedBox(height: 20),
@@ -135,7 +138,8 @@ class _BackupPageState extends State<BackupPage> {
       }
       if (mounted) {
         setState(() {
-          _statusMessage = 'تمت استعادة البيانات بنجاح! يُرجى إعادة تشغيل الشاشة.';
+          _statusMessage =
+              'تمت استعادة البيانات بنجاح! يُرجى إعادة تشغيل الشاشة.';
         });
       }
     } catch (e) {

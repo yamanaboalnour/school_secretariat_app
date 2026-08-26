@@ -28,8 +28,7 @@ class AuthRepository {
       'secretary',
       'أمين السر',
     ]);
-    final legacyDefaultCount =
-        (legacyDefaultRows.first['count'] as int?) ?? 0;
+    final legacyDefaultCount = (legacyDefaultRows.first['count'] as int?) ?? 0;
     return legacyDefaultCount == count;
   }
 
@@ -54,7 +53,8 @@ class AuthRepository {
       final countRows =
           await transaction.rawQuery('SELECT COUNT(*) AS count FROM users');
       final count = (countRows.first['count'] as int?) ?? 0;
-      if (count > 0 && !await _transactionHasOnlyLegacyDefaultUsers(transaction)) {
+      if (count > 0 &&
+          !await _transactionHasOnlyLegacyDefaultUsers(transaction)) {
         throw StateError('تم إعداد التطبيق مسبقًا.');
       }
 
@@ -251,11 +251,15 @@ class AuthRepository {
   }) async {
     final salt = HashHelper.generateSalt();
     final passwordHash = await HashHelper.hashPassword(password, salt);
-    await database.update('users', {
-      'password_hash': passwordHash,
-      'salt': salt,
-      'password_algorithm': HashHelper.pbkdf2Sha256V1,
-    }, where: 'id = ?', whereArgs: [userId]);
+    await database.update(
+        'users',
+        {
+          'password_hash': passwordHash,
+          'salt': salt,
+          'password_algorithm': HashHelper.pbkdf2Sha256V1,
+        },
+        where: 'id = ?',
+        whereArgs: [userId]);
   }
 
   String _validateUserDetails({

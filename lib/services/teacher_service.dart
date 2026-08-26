@@ -12,11 +12,8 @@ class TeacherService {
 
   // جلب كافة المدرسين
   Stream<List<TeacherModel>> getAllTeachers() {
-    return _db
-        .collection(_collectionPath)
-        .orderBy('fullName')
-        .snapshots()
-        .map((snapshot) => snapshot.docs
+    return _db.collection(_collectionPath).orderBy('fullName').snapshots().map(
+        (snapshot) => snapshot.docs
             .map((doc) => TeacherModel.fromFirestore(doc))
             .toList());
   }

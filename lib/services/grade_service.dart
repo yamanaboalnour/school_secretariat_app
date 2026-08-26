@@ -21,8 +21,7 @@ class GradeService {
         .where('studentId', isEqualTo: studentId)
         .where('term', isEqualTo: term)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => GradeModel.fromFirestore(doc))
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => GradeModel.fromFirestore(doc)).toList());
   }
 }

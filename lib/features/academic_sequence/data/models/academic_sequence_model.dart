@@ -33,7 +33,7 @@ class AcademicStudent {
     final parts = [
       firstName.trim(),
       lastName.trim(),
-    ].where((e) => e.isNotEmpty).toList();
+    ].where((value) => value.isNotEmpty).toList();
 
     return parts.join(' ');
   }

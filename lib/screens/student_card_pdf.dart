@@ -29,7 +29,8 @@ class StudentCardPdfScreen extends StatelessWidget {
     );
   }
 
-  Future<Uint8List> _generateCardPdf(PdfPageFormat format, Student student) async {
+  Future<Uint8List> _generateCardPdf(
+      PdfPageFormat format, Student student) async {
     final pdf = pw.Document();
 
     final fontData = await PdfGoogleFonts.cairoRegular();
@@ -75,12 +76,18 @@ class StudentCardPdfScreen extends StatelessWidget {
                       children: [
                         pw.Text(
                           'ثانوية الشيخ المربي عبد الكريم الرفاعي الشرعية للبنين',
-                          style: pw.TextStyle(font: fontBold, fontSize: 7, color: PdfColors.white),
+                          style: pw.TextStyle(
+                              font: fontBold,
+                              fontSize: 7,
+                              color: PdfColors.white),
                           textAlign: pw.TextAlign.center,
                         ),
                         pw.Text(
                           'بطاقة تعريف طالب',
-                          style: pw.TextStyle(font: fontData, fontSize: 6, color: PdfColors.yellow300),
+                          style: pw.TextStyle(
+                              font: fontData,
+                              fontSize: 6,
+                              color: PdfColors.yellow300),
                           textAlign: pw.TextAlign.center,
                         ),
                       ],
@@ -99,11 +106,23 @@ class StudentCardPdfScreen extends StatelessWidget {
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
                             children: [
-                              pw.Text('الاسم: ${student.fullName}', style: pw.TextStyle(font: fontBold, fontSize: 8)),
-                              pw.Text('الأب: ${student.fatherName}', style: pw.TextStyle(font: fontData, fontSize: 7)),
-                              pw.Text('الأم: ${student.motherName}', style: pw.TextStyle(font: fontData, fontSize: 7)),
-                              pw.Text('الرقم العام: ${student.generalId}', style: pw.TextStyle(font: fontBold, fontSize: 8, color: PdfColors.teal900)),
-                              pw.Text('الصف الحالي: ${student.latestGrade}', style: pw.TextStyle(font: fontData, fontSize: 7)),
+                              pw.Text('الاسم: ${student.fullName}',
+                                  style: pw.TextStyle(
+                                      font: fontBold, fontSize: 8)),
+                              pw.Text('الأب: ${student.fatherName}',
+                                  style: pw.TextStyle(
+                                      font: fontData, fontSize: 7)),
+                              pw.Text('الأم: ${student.motherName}',
+                                  style: pw.TextStyle(
+                                      font: fontData, fontSize: 7)),
+                              pw.Text('الرقم العام: ${student.generalId}',
+                                  style: pw.TextStyle(
+                                      font: fontBold,
+                                      fontSize: 8,
+                                      color: PdfColors.teal900)),
+                              pw.Text('الصف الحالي: ${student.latestGrade}',
+                                  style: pw.TextStyle(
+                                      font: fontData, fontSize: 7)),
                             ],
                           ),
                         ),
@@ -119,7 +138,11 @@ class StudentCardPdfScreen extends StatelessWidget {
                               height: 45,
                             ),
                             pw.SizedBox(height: 4),
-                            pw.Text('الختم الرقمي', style: pw.TextStyle(font: fontData, fontSize: 5, color: PdfColors.grey700)),
+                            pw.Text('الختم الرقمي',
+                                style: pw.TextStyle(
+                                    font: fontData,
+                                    fontSize: 5,
+                                    color: PdfColors.grey700)),
                           ],
                         ),
                       ],
@@ -130,8 +153,13 @@ class StudentCardPdfScreen extends StatelessWidget {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text('تاريخ الولادة: ${student.birthDate}', style: pw.TextStyle(font: fontData, fontSize: 6, color: PdfColors.grey800)),
-                      pw.Text('توقيع مدير الثانوية: .........', style: pw.TextStyle(font: fontData, fontSize: 6)),
+                      pw.Text('تاريخ الولادة: ${student.birthDate}',
+                          style: pw.TextStyle(
+                              font: fontData,
+                              fontSize: 6,
+                              color: PdfColors.grey800)),
+                      pw.Text('توقيع مدير الثانوية: .........',
+                          style: pw.TextStyle(font: fontData, fontSize: 6)),
                     ],
                   ),
                 ],

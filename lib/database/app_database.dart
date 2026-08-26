@@ -9,7 +9,8 @@ part 'app_database.g.dart';
 
 class Students extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get nationalId => text().unique().nullable()(); // الرقم القومي/الوزاري
+  TextColumn get nationalId =>
+      text().unique().nullable()(); // الرقم القومي/الوزاري
   TextColumn get firstName => text().withLength(min: 2, max: 50)();
   TextColumn get fatherName => text().withLength(min: 2, max: 50)();
   TextColumn get lastName => text().withLength(min: 2, max: 50)();
@@ -38,7 +39,8 @@ class AcademicRecords extends Table {
 class DocumentLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get studentId => integer().references(Students, #id)();
-  TextColumn get documentType => text()(); // تسلسل دراسي، كارت طالب، وثيقة انتقال
+  TextColumn get documentType =>
+      text()(); // تسلسل دراسي، كارت طالب، وثيقة انتقال
   TextColumn get serialNumber => text().unique()();
   TextColumn get qrHash => text()(); // النص المشفر داخل QR
   IntColumn get issuedByUserId => integer()();

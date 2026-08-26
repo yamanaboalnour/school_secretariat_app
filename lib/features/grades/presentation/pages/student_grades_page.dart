@@ -33,7 +33,8 @@ class _StudentGradesPageState extends State<StudentGradesPage> {
     if (_studentId == null) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'لا يمكن إدارة الدرجات قبل حفظ الطالب في قاعدة البيانات.';
+        _errorMessage =
+            'لا يمكن إدارة الدرجات قبل حفظ الطالب في قاعدة البيانات.';
       });
       return;
     }
@@ -131,13 +132,17 @@ class _StudentGradesPageState extends State<StudentGradesPage> {
                   ),
                   TextField(
                     controller: firstTermController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'درجة الفصل الأول'),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration:
+                        const InputDecoration(labelText: 'درجة الفصل الأول'),
                   ),
                   TextField(
                     controller: secondTermController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'درجة الفصل الثاني'),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration:
+                        const InputDecoration(labelText: 'درجة الفصل الثاني'),
                   ),
                   if (validationMessage != null)
                     Padding(

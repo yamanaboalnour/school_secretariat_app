@@ -13,7 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -72,7 +72,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 12),
                 const Text(
                   'نظام أمانة السر الثانوية',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.indigo),
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -118,7 +121,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('تسجيل الدخول', style: TextStyle(fontSize: 16)),
+                        : const Text('تسجيل الدخول',
+                            style: TextStyle(fontSize: 16)),
                   ),
                 ),
               ],

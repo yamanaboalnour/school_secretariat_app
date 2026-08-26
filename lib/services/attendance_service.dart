@@ -11,7 +11,8 @@ class AttendanceService {
 
     for (var record in records) {
       // إنشاء معرف فريد يضمن عدم تكرار تسجيل الطالب في نفس اليوم
-      String dateStr = "${record.date.year}-${record.date.month}-${record.date.day}";
+      String dateStr =
+          "${record.date.year}-${record.date.month}-${record.date.day}";
       String docId = "${record.studentId}_$dateStr";
 
       DocumentReference docRef = _db.collection(_collectionPath).doc(docId);
@@ -22,7 +23,8 @@ class AttendanceService {
   }
 
   // جلب سجلات الحضور ليوم محدد وصف معين
-  Stream<List<AttendanceModel>> getAttendanceByDateAndGrade(DateTime date, String grade) {
+  Stream<List<AttendanceModel>> getAttendanceByDateAndGrade(
+      DateTime date, String grade) {
     DateTime startOfDay = DateTime(date.year, date.month, date.day);
     DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
 

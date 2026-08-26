@@ -41,7 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('اسم المستخدم أو كلمة المرور غير صحيحة.')),
+          const SnackBar(
+              content: Text('اسم المستخدم أو كلمة المرور غير صحيحة.')),
         );
         return;
       }
@@ -77,12 +78,16 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.school_rounded, size: 64, color: Color(0xFF1E3A8A)),
+                const Icon(Icons.school_rounded,
+                    size: 64, color: Color(0xFF1E3A8A)),
                 const SizedBox(height: 16),
                 const Text(
                   'أمانة السر - الثانوية',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E3A8A)),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -98,7 +103,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'اسم المستخدم مطلوب' : null,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'اسم المستخدم مطلوب' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -109,7 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: Icon(Icons.lock_outline),
                     border: OutlineInputBorder(),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'كلمة المرور مطلوبة' : null,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'كلمة المرور مطلوبة' : null,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
@@ -117,11 +124,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E3A8A),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                   child: _isLoading
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('تسجيل الدخول', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text('تسجيل الدخول',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

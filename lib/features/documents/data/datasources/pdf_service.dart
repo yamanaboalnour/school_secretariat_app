@@ -57,19 +57,24 @@ class PdfService {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 // الهيدر الرسمي
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('الجمهورية العربية السورية', style: pw.TextStyle(font: font, fontSize: 12)),
-                        pw.Text('وزارة التربية', style: pw.TextStyle(font: font, fontSize: 12)),
-                        pw.Text('مديرية تربية $resolvedGovernorate', style: pw.TextStyle(font: font, fontSize: 12)),
-                        pw.Text(resolvedSchoolName, style: pw.TextStyle(font: fontBold, fontSize: 13)),
+                        pw.Text('الجمهورية العربية السورية',
+                            style: pw.TextStyle(font: font, fontSize: 12)),
+                        pw.Text('وزارة التربية',
+                            style: pw.TextStyle(font: font, fontSize: 12)),
+                        pw.Text('مديرية تربية $resolvedGovernorate',
+                            style: pw.TextStyle(font: font, fontSize: 12)),
+                        pw.Text(resolvedSchoolName,
+                            style: pw.TextStyle(font: fontBold, fontSize: 13)),
                       ],
                     ),
-                    pw.Text('أمانة السر المدرسية', style: pw.TextStyle(font: fontBold, fontSize: 16)),
+                    pw.Text('أمانة السر المدرسية',
+                        style: pw.TextStyle(font: fontBold, fontSize: 16)),
                   ],
                 ),
                 pw.SizedBox(height: 30),
@@ -78,7 +83,10 @@ class PdfService {
                 pw.Center(
                   child: pw.Text(
                     'وثيقة تسلسل دراسي',
-                    style: pw.TextStyle(font: fontBold, fontSize: 20, decoration: pw.TextDecoration.underline),
+                    style: pw.TextStyle(
+                        font: fontBold,
+                        fontSize: 20,
+                        decoration: pw.TextDecoration.underline),
                   ),
                 ),
                 pw.SizedBox(height: 40),
@@ -126,8 +134,10 @@ class PdfService {
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('أمين السر: $resolvedSecretaryName', style: pw.TextStyle(font: font, fontSize: 12)),
-                    pw.Text('مدير المدرسة: $resolvedDirectorName', style: pw.TextStyle(font: fontBold, fontSize: 12)),
+                    pw.Text('أمين السر: $resolvedSecretaryName',
+                        style: pw.TextStyle(font: font, fontSize: 12)),
+                    pw.Text('مدير المدرسة: $resolvedDirectorName',
+                        style: pw.TextStyle(font: fontBold, fontSize: 12)),
                   ],
                 ),
               ],
@@ -206,7 +216,12 @@ class PdfService {
                 ),
                 pw.SizedBox(height: 20),
                 pw.TableHelper.fromTextArray(
-                  headers: ['المادة', 'الفصل الأول', 'الفصل الثاني', 'المجموع النهائي'],
+                  headers: [
+                    'المادة',
+                    'الفصل الأول',
+                    'الفصل الثاني',
+                    'المجموع النهائي'
+                  ],
                   data: grades
                       .map(
                         (grade) => [
@@ -283,5 +298,4 @@ class PdfService {
     final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch;
     return 'SCH-$documentType-${student.id ?? 0}-$timestamp';
   }
-
 }

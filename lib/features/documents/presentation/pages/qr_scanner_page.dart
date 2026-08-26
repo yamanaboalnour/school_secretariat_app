@@ -24,7 +24,8 @@ class _QrScannerPageState extends State<QrScannerPage> {
       final parts = value.split('|');
       final serialParts = parts.length > 1 ? parts[1].split('-') : <String>[];
       final documentType = serialParts.length > 2 ? serialParts[1] : null;
-      final studentId = serialParts.length > 2 ? int.tryParse(serialParts[2]) : null;
+      final studentId =
+          serialParts.length > 2 ? int.tryParse(serialParts[2]) : null;
       if (parts.length != 3 || studentId == null) {
         throw const FormatException('رمز الوثيقة غير صالح.');
       }
@@ -36,9 +37,8 @@ class _QrScannerPageState extends State<QrScannerPage> {
             token: value,
             studentId: student.id!,
             studentName: '${student.firstName} ${student.lastName}',
-            documentType: documentType == 'report_card'
-              ? 'report_card'
-              : 'sequence',
+            documentType:
+                documentType == 'report_card' ? 'report_card' : 'sequence',
           );
       setState(() {
         _resultMessage = isValid
