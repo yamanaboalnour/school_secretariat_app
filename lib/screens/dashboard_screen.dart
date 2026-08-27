@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/student_model.dart';
 import '../services/dashboard_service.dart';
 import '../services/sequence_service.dart';
+import '../../../../database/database_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
   final List<Student> students;
@@ -21,12 +22,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadIssuedCount();
   }
 
-  Future<void> _loadIssuedCount() async {
-    int nextSeq = await SequenceService.getNextSequenceNumber();
-    setState(() {
-      _totalIssuedDocuments =
-          nextSeq - 1000; // الإحصاء استناداً لبداية الترقيم من 1000
-    });
+    Future<void> _loadIssuedCount() async {
+    try {
+      final db = await DatabaseHelper.instance.database;
+
+      final result = await db.rawQuery('''
+        SELECT COUNT(*) AS total
+        FROM issued_documents
+        WHERE document_type = ?
+      ''', [
+        'sequence',
+      ]);
+
+      final total =
+          (result.first['total'] as int?) ?? 0;
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _totalIssuedDocuments = total;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _totalIssuedDocuments = 0;
+      });
+
+      debugPrint(
+        'تعذر تحميل عدد الوثائق الصادرة: $error',
+      );
+    }
   }
 
   @override

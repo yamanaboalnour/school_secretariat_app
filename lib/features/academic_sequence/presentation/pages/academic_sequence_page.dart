@@ -15,9 +15,10 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
   static const String schoolName =
       'ثانوية الشيخ المربي عبد الكريم الرفاعي الشرعية للبنين';
 
-  static const String volumeNumber = '٢٢';
+  static const String volumeNumber = '26';
 
   static const String secretaryName = 'أنس أبو شامة';
+
   static const String principalName = 'معاذ نعمان';
 
   final AcademicSequenceCsvService _service = AcademicSequenceCsvService();
@@ -32,14 +33,15 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
   bool _loading = true;
   String? _error;
 
-  int _documentSerial = 1;
-  bool _printing = false;
+  int _nextSerial = 1;
 
   @override
   void initState() {
     super.initState();
 
-    _searchController.addListener(_filterStudents);
+    _searchController.addListener(
+      _filterStudents,
+    );
 
     _load();
   }
@@ -57,19 +59,18 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     try {
       final students = await _service.loadStudents();
 
+      final serial = await AcademicSequencePdfService.peekNextSerial();
+
       if (!mounted) return;
 
       setState(() {
         _students = students;
         _filteredStudents = students;
+        _selectedStudent = students.isNotEmpty ? students.first : null;
+
+        _nextSerial = serial;
         _loading = false;
-
-        if (students.isNotEmpty) {
-          _selectedStudent = students.first;
-        }
       });
-
-      await _loadNextSerial();
     } catch (error) {
       if (!mounted) return;
 
@@ -80,45 +81,24 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     }
   }
 
-  Future<void> _loadNextSerial() async {
-    try {
-      final nextSerial = await AcademicSequencePdfService.peekNextSerial();
-
-      if (!mounted) return;
-
-      setState(() {
-        _documentSerial = nextSerial;
-      });
-    } catch (_) {
-      // في حال لم تكن خدمة التسلسل جاهزة بعد،
-      // نبقي الرقم الافتراضي.
-    }
-  }
-
   void _filterStudents() {
     final query = _searchController.text.trim().toLowerCase();
 
-    if (query.isEmpty) {
-      setState(() {
-        _filteredStudents = _students;
-      });
-      return;
-    }
-
-    final filtered = _students.where((student) {
-      final name = student.fullName.toLowerCase();
-
-      final number = student.studentNumber.toLowerCase();
-
-      return name.contains(query) || number.contains(query);
-    }).toList();
+    final filtered = query.isEmpty
+        ? _students
+        : _students.where((student) {
+            return student.fullName.toLowerCase().contains(query) ||
+                student.studentNumber.toLowerCase().contains(query);
+          }).toList();
 
     setState(() {
       _filteredStudents = filtered;
     });
   }
 
-  void _selectStudent(AcademicStudent student) {
+  void _selectStudent(
+    AcademicStudent student,
+  ) {
     setState(() {
       _selectedStudent = student;
     });
@@ -127,27 +107,27 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
   Future<void> _print() async {
     final student = _selectedStudent;
 
-    if (student == null || _printing) {
+    if (student == null) {
       return;
     }
-
-    setState(() {
-      _printing = true;
-    });
 
     try {
       await AcademicSequencePdfService.printTranscript(
         student,
       );
 
-      await _loadNextSerial();
+      final next = await AcademicSequencePdfService.peekNextSerial();
 
       if (!mounted) return;
+
+      setState(() {
+        _nextSerial = next;
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'تم تجهيز وثيقة ${student.fullName} للطباعة.',
+            'تم تجهيز الوثيقة للطباعة. الرقم المستخدم: ${next - 1}',
           ),
         ),
       );
@@ -161,12 +141,6 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
           ),
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _printing = false;
-        });
-      }
     }
   }
 
@@ -200,11 +174,10 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     if (_error != null) {
       return Center(
         child: Card(
-          margin: const EdgeInsets.all(24),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'تعذر قراءة ملفات البيانات:\n$_error',
+              'تعذر قراءة البيانات:\n$_error',
               textAlign: TextAlign.center,
             ),
           ),
@@ -222,7 +195,7 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
           child: _selectedStudent == null
               ? const Center(
                   child: Text(
-                    'اختر طالبًا لعرض الوثيقة',
+                    'اختر طالبًا',
                     style: TextStyle(fontSize: 18),
                   ),
                 )
@@ -238,20 +211,17 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     return Container(
       margin: const EdgeInsets.all(12),
       child: Card(
-        elevation: 2,
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              child: const Text(
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
                 'اختيار الطالب',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
             Padding(
@@ -263,26 +233,16 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
               ),
               child: TextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'ابحث بالاسم أو الرقم',
-                  prefixIcon: const Icon(
-                    Icons.search,
-                  ),
-                  suffixIcon: _searchController.text.isEmpty
-                      ? null
-                      : IconButton(
-                          icon: const Icon(
-                            Icons.clear,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        ),
-                  border: const OutlineInputBorder(),
+                decoration: const InputDecoration(
+                  hintText: 'الاسم أو الرقم',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
                 ),
               ),
             ),
-            const Divider(height: 1),
+            const Divider(
+              height: 1,
+            ),
             Expanded(
               child: _filteredStudents.isEmpty
                   ? const Center(
@@ -292,7 +252,10 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
                     )
                   : ListView.builder(
                       itemCount: _filteredStudents.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (
+                        context,
+                        index,
+                      ) {
                         final student = _filteredStudents[index];
 
                         final selected = identical(
@@ -302,21 +265,16 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
 
                         return ListTile(
                           selected: selected,
-                          leading: CircleAvatar(
-                            child: Text(
-                              student.studentNumber,
-                            ),
-                          ),
                           title: Text(
                             student.fullName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Text(
-                            'رقم الطالب: ${student.studentNumber}',
+                            'الرقم: ${student.studentNumber}',
                           ),
                           onTap: () {
-                            _selectStudent(student);
+                            _selectStudent(
+                              student,
+                            );
                           },
                         );
                       },
@@ -336,12 +294,42 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
         Expanded(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: _buildPaperPreview(student),
+              padding: const EdgeInsets.all(
+                20,
+              ),
+              child: _buildPaperPreview(
+                student,
+              ),
             ),
           ),
         ),
-        _buildBottomBar(student),
+        Container(
+          padding: const EdgeInsets.all(12),
+          color: Colors.white,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'الطالب: ${student.fullName}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Text(
+                'الرقم المتسلسل القادم: $_nextSerial',
+              ),
+              const SizedBox(width: 20),
+              FilledButton.icon(
+                onPressed: _print,
+                icon: const Icon(Icons.print),
+                label: const Text(
+                  'طباعة الوثيقة',
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -353,17 +341,13 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
       aspectRatio: 297 / 210,
       child: Container(
         constraints: const BoxConstraints(
-          maxWidth: 1100,
+          maxWidth: 1200,
         ),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
-          border: Border.all(
-            color: Colors.black87,
-            width: 1,
-          ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              blurRadius: 12,
+              blurRadius: 15,
               spreadRadius: 2,
               color: Colors.black12,
             ),
@@ -377,11 +361,11 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
               ),
             ),
             Container(
-              width: 2,
+              width: 1.5,
               margin: const EdgeInsets.symmetric(
-                vertical: 12,
+                vertical: 10,
               ),
-              color: Colors.black87,
+              color: Colors.black,
             ),
             Expanded(
               child: _buildDocumentHalf(
@@ -398,47 +382,70 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     AcademicStudent student,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 28,
-        vertical: 18,
+      margin: const EdgeInsets.all(6),
+      padding: const EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        12,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.black,
+          width: 1,
+        ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildDocumentHeader(),
-          const SizedBox(height: 10),
+          _buildHeader(),
+          const SizedBox(height: 8),
           const Text(
             'وثيقة تسلسل دراسي',
             style: TextStyle(
-              fontSize: 21,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 10),
-          _buildStudentInfo(student),
           const SizedBox(height: 8),
-          const Text(
-            'قضى الأعوام التالية في ثانويتنا:',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+          _buildStudentInfo(
+            student,
+          ),
+          const SizedBox(height: 7),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'قضى الأعوام التالية في ثانويتنا:',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(height: 6),
           Expanded(
-            child: _buildAcademicTable(student),
+            child: _buildAcademicTable(
+              student,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'وتركت الثانوية بتاريخ: ${_today()} والبيان أعطي هذه الوثيقة بناءً عليه.',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(height: 10),
-          _buildLeavingStatement(),
-          const Spacer(),
           _buildSignatures(),
         ],
       ),
     );
   }
 
-  Widget _buildDocumentHeader() {
+  Widget _buildHeader() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -448,53 +455,49 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
               Text(
                 'الجمهورية العربية السورية',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
               Text(
                 'وزارة الأوقاف',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
               Text(
                 'مديرية الأوقاف في محافظة دمشق',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                 ),
-                textAlign: TextAlign.center,
               ),
               Text(
                 schoolName,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              'الرقم المتسلسل: $_documentSerial',
+              'الرقم المتسلسل: $_nextSerial',
               style: const TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 3),
             Text(
-              'رقم الجلد: $volumeNumber',
+              'رقم المجلد: $volumeNumber',
               style: const TextStyle(
-                fontSize: 10,
+                fontSize: 9,
               ),
             ),
           ],
@@ -511,16 +514,15 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
         Row(
           children: [
             Expanded(
-              child: _infoText(
+              child: _info(
                 'إن الطالب',
                 student.fullName,
               ),
             ),
-            const SizedBox(width: 8),
             Expanded(
-              child: _infoText(
-                'المولود في',
-                '........................',
+              child: _info(
+                'بن',
+                student.fatherName,
               ),
             ),
           ],
@@ -529,16 +531,15 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
         Row(
           children: [
             Expanded(
-              child: _infoText(
-                'بتاريخ',
-                '....................',
+              child: _info(
+                'المولود في',
+                student.birthPlace,
               ),
             ),
-            const SizedBox(width: 8),
             Expanded(
-              child: _infoText(
-                'رقم الطالب',
-                student.studentNumber,
+              child: _info(
+                'بتاريخ',
+                student.birthDate,
               ),
             ),
           ],
@@ -547,28 +548,33 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     );
   }
 
-  Widget _infoText(
+  Widget _info(
     String label,
     String value,
   ) {
-    return RichText(
-      textAlign: TextAlign.right,
-      text: TextSpan(
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 10,
-        ),
-        children: [
-          TextSpan(
-            text: '$label: ',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 4,
+      ),
+      child: RichText(
+        textAlign: TextAlign.right,
+        text: TextSpan(
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 11,
+          ),
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          TextSpan(
-            text: value,
-          ),
-        ],
+            TextSpan(
+              text: value.isEmpty ? '................' : value,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -576,49 +582,47 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
   Widget _buildAcademicTable(
     AcademicStudent student,
   ) {
-    const int rowCount = 7;
+    const rowCount = 7;
 
     return Table(
       border: TableBorder.all(
-        color: Colors.black87,
+        color: Colors.black,
         width: 0.7,
       ),
       columnWidths: const {
         0: FlexColumnWidth(2.2),
-        1: FlexColumnWidth(1.2),
-        2: FlexColumnWidth(1.5),
+        1: FlexColumnWidth(1.5),
+        2: FlexColumnWidth(1.6),
       },
       children: [
         const TableRow(
           children: [
-            _TableHeader(
-              text: 'العام الدراسي',
+            _HeaderCell(
+              'العام الدراسي',
             ),
-            _TableHeader(
-              text: 'في الصف',
+            _HeaderCell(
+              'في الصف',
             ),
-            _TableHeader(
-              text: 'النتيجة',
+            _HeaderCell(
+              'النتيجة',
             ),
           ],
         ),
         for (int i = 0; i < rowCount; i++)
           TableRow(
             children: [
-              _tableCell(
+              _DataCell(
                 i < student.records.length
-                    ? _formatAcademicYear(
+                    ? _formatYear(
                         student.records[i].academicYear,
                       )
                     : '',
               ),
-              _tableCell(
+              _DataCell(
                 i < student.records.length ? student.records[i].grade : '',
               ),
-              _tableCell(
-                i < student.records.length
-                    ? '${student.records[i].status} / ${student.records[i].grade}'
-                    : '',
+              _DataCell(
+                i < student.records.length ? student.records[i].status : '',
               ),
             ],
           ),
@@ -626,133 +630,70 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
     );
   }
 
-  Widget _buildLeavingStatement() {
-    final now = DateTime.now();
-
-    final date =
-        '${now.year}/${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}';
-
-    return Text(
-      'وتركت الثانوية بتاريخ: $date   والبيان أعطي هذه الوثيقة بناءً عليه.',
-      style: const TextStyle(
-        fontSize: 9,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
   Widget _buildSignatures() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: _signature(
-            'أمين السر',
-            secretaryName,
+          child: Column(
+            children: [
+              const Text(
+                'أمين السر',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                secretaryName,
+                style: const TextStyle(
+                  fontSize: 10,
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              const Text(
+                'التوقيع',
+                style: TextStyle(
+                  fontSize: 9,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 12),
         Expanded(
-          child: _signature(
-            'المدير',
-            principalName,
+          child: Column(
+            children: [
+              const Text(
+                'المدير',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                principalName,
+                style: const TextStyle(
+                  fontSize: 10,
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              const Text(
+                'التوقيع والخاتم الرسمي',
+                style: TextStyle(
+                  fontSize: 9,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _signature(
-    String title,
-    String name,
-  ) {
-    return Column(
-      children: [
-        Text(
-          '$title:',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 10,
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          'الاسم: $name',
-          style: const TextStyle(
-            fontSize: 9,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'التوقيع والخاتم الرسمي',
-          style: TextStyle(
-            fontSize: 8,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomBar(
-    AcademicStudent student,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        10,
-        20,
-        14,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: Colors.black12,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  student.fullName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'الرقم: ${student.studentNumber}',
-                ),
-              ],
-            ),
-          ),
-          FilledButton.icon(
-            onPressed: _printing ? null : _print,
-            icon: _printing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Icon(
-                    Icons.print,
-                  ),
-            label: Text(
-              _printing ? 'جاري تجهيز الوثيقة...' : 'طباعة الوثيقة',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatAcademicYear(
+  String _formatYear(
     String value,
   ) {
     final parts = value.split('-');
@@ -763,17 +704,25 @@ class _AcademicSequencePageState extends State<AcademicSequencePage> {
 
     return '${parts[1]} / ${parts[0]} م';
   }
+
+  String _today() {
+    final now = DateTime.now();
+
+    return '${now.year}/${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}';
+  }
 }
 
-class _TableHeader extends StatelessWidget {
+class _HeaderCell extends StatelessWidget {
   final String text;
 
-  const _TableHeader({
-    required this.text,
-  });
+  const _HeaderCell(
+    this.text,
+  );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Container(
       height: 30,
       alignment: Alignment.center,
@@ -781,29 +730,35 @@ class _TableHeader extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 10,
           fontWeight: FontWeight.bold,
+          fontSize: 10,
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }
 }
 
-Widget _tableCell(String text) {
-  return Container(
-    height: 27,
-    alignment: Alignment.center,
-    padding: const EdgeInsets.symmetric(
-      horizontal: 4,
-      vertical: 2,
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 9,
-      ),
-      textAlign: TextAlign.center,
-    ),
+class _DataCell extends StatelessWidget {
+  final String text;
+
+  const _DataCell(
+    this.text,
   );
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      height: 29,
+      alignment: Alignment.center,
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 9,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
 }

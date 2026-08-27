@@ -19,6 +19,7 @@ class SchoolSecretariatApp extends StatelessWidget {
       title: 'أمانة السر المدرسية',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Traditional Arabic',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.indigo,
         ),

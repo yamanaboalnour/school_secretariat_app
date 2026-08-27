@@ -6,27 +6,34 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
+
   static Database? _database;
 
   DatabaseHelper._init();
 
   Future<Database> get database async {
-    if (_database != null) return _database!;
+    if (_database != null) {
+      return _database!;
+    }
+
     _database = await _initDB('school_secretariat.db');
     return _database!;
   }
 
   Future<Database> _initDB(String filePath) async {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    if (Platform.isWindows ||
+        Platform.isLinux ||
+        Platform.isMacOS) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
 
     final dbDir = await getApplicationDocumentsDirectory();
     final path = join(dbDir.path, filePath);
+
     return openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -41,12 +48,14 @@ class DatabaseHelper {
         father_name TEXT NOT NULL,
         mother_name TEXT NOT NULL,
         national_id TEXT UNIQUE,
+        birth_place TEXT,
         birth_date TEXT,
         grade_level TEXT NOT NULL,
         registration_date TEXT NOT NULL,
         created_at TEXT NOT NULL
       )
     ''');
+
     await db.execute('''
       CREATE TABLE issued_documents (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,23 +63,77 @@ class DatabaseHelper {
         document_type TEXT NOT NULL,
         issue_date TEXT NOT NULL,
         file_path TEXT,
-        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+        sequence_number INTEGER,
+        folder_number INTEGER,
+        FOREIGN KEY (student_id)
+          REFERENCES students (id)
+          ON DELETE CASCADE
       )
     ''');
+
     await _createSchoolProfileTable(db);
     await _createGradesTable(db);
     await _createUsersTable(db);
     await _createSyncQueueTable(db);
     await _createAttendanceTable(db);
+
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_issued_documents_sequence
+      ON issued_documents(document_type, folder_number, sequence_number)
+    ''');
   }
 
-  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) await _createSchoolProfileTable(db);
-    if (oldVersion < 3) await _createGradesTable(db);
-    if (oldVersion < 4) await _createUsersTable(db);
-    if (oldVersion < 5) await _createSyncQueueTable(db);
-    if (oldVersion < 6) await _createAttendanceTable(db);
-    if (oldVersion < 7) await _addPasswordAlgorithmColumn(db);
+  Future<void> _upgradeDB(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 2) {
+      await _createSchoolProfileTable(db);
+    }
+
+    if (oldVersion < 3) {
+      await _createGradesTable(db);
+    }
+
+    if (oldVersion < 4) {
+      await _createUsersTable(db);
+    }
+
+    if (oldVersion < 5) {
+      await _createSyncQueueTable(db);
+    }
+
+    if (oldVersion < 6) {
+      await _createAttendanceTable(db);
+    }
+
+    if (oldVersion < 7) {
+      await _addPasswordAlgorithmColumn(db);
+    }
+
+    if (oldVersion < 8) {
+      await _addAcademicSequenceColumns(db);
+    }
+  }
+
+  Future<void> _addAcademicSequenceColumns(Database db) async {
+    await db.execute(
+      'ALTER TABLE students ADD COLUMN birth_place TEXT',
+    );
+
+    await db.execute(
+      'ALTER TABLE issued_documents ADD COLUMN sequence_number INTEGER',
+    );
+
+    await db.execute(
+      'ALTER TABLE issued_documents ADD COLUMN folder_number INTEGER',
+    );
+
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_issued_documents_sequence
+      ON issued_documents(document_type, folder_number, sequence_number)
+    ''');
   }
 
   Future<void> _createSchoolProfileTable(Database db) async {
@@ -94,7 +157,9 @@ class DatabaseHelper {
         first_term REAL NOT NULL DEFAULT 0,
         second_term REAL NOT NULL DEFAULT 0,
         UNIQUE(student_id, subject_name),
-        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+        FOREIGN KEY (student_id)
+          REFERENCES students (id)
+          ON DELETE CASCADE
       )
     ''');
   }
@@ -135,6 +200,7 @@ class DatabaseHelper {
         created_at TEXT NOT NULL
       )
     ''');
+
     await db.execute('''
       CREATE INDEX IF NOT EXISTS idx_sync_queue_status_created
       ON sync_queue(status, created_at)
@@ -151,13 +217,16 @@ class DatabaseHelper {
         note TEXT,
         updated_at TEXT NOT NULL,
         UNIQUE(student_id, attendance_date),
-        FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+        FOREIGN KEY (student_id)
+          REFERENCES students (id)
+          ON DELETE CASCADE
       )
     ''');
   }
 
   Future<void> close() async {
     final db = _database;
+
     if (db != null) {
       await db.close();
       _database = null;

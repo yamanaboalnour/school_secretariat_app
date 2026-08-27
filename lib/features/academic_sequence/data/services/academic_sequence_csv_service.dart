@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import '../models/academic_sequence_model.dart';
 
 class AcademicSequenceCsvService {
-  static const String studentsAsset = 'assets/students.csv';
+  // غيّر اسم الملف إذا كان اسم ملفك الحقيقي مختلفًا.
+  static const String studentsAsset = 'assets/students/students.csv';
 
   static const String academicHistoryAsset =
       'assets/Record the results of the years for students.csv';
@@ -24,8 +25,7 @@ class AcademicSequenceCsvService {
 
     Map<String, Map<String, String>> students = {};
 
-    // students.csv اختياري حاليًا.
-    // إذا كان الملف فارغًا أو غير صالح، نكمل من ملف النتائج.
+    // السجل العام للطلاب اختياري في حال كان فارغًا.
     try {
       final studentsCsv = await rootBundle.loadString(
         studentsAsset,
@@ -39,59 +39,91 @@ class AcademicSequenceCsvService {
         }
       }
     } catch (_) {
-      // تجاهل الخطأ مؤقتًا والاعتماد على ملف النتائج.
+      // نتابع من ملف النتائج الدراسية.
     }
 
-    final history = _buildHistoryIndex(historyRows);
+    final history = _buildHistoryIndex(
+      historyRows,
+    );
 
     final result = <AcademicStudent>[];
 
     for (final item in history.values) {
       final student = students[item.studentNumber];
 
-      final firstName = student?['firstName']?.trim().isNotEmpty == true
-          ? student!['firstName']!
-          : item.firstName;
-
-      final lastName = student?['lastName']?.trim().isNotEmpty == true
-          ? student!['lastName']!
-          : item.lastName;
-
-      final currentGrade = student?['grade']?.trim().isNotEmpty == true
-          ? student!['grade']!
-          : item.currentGrade;
-
-      final section = student?['section']?.trim().isNotEmpty == true
-          ? student!['section']!
-          : item.section;
-
       result.add(
         AcademicStudent(
           studentNumber: item.studentNumber,
-          firstName: firstName,
-          lastName: lastName,
-          currentGrade: currentGrade,
-          section: section,
+          firstName: _prefer(
+            student?['firstName'],
+            item.firstName,
+          ),
+          lastName: _prefer(
+            student?['lastName'],
+            item.lastName,
+          ),
+          fatherName: _prefer(
+            student?['fatherName'],
+            item.fatherName,
+          ),
+          birthPlace: _prefer(
+            student?['birthPlace'],
+            item.birthPlace,
+          ),
+          birthDate: _prefer(
+            student?['birthDate'],
+            item.birthDate,
+          ),
+          currentGrade: _gradeName(
+            _prefer(
+              student?['grade'],
+              item.currentGrade,
+            ),
+          ),
+          section: _prefer(
+            student?['section'],
+            item.section,
+          ),
           records: item.records,
         ),
       );
     }
 
-    result.sort((a, b) {
-      final aNumber = int.tryParse(a.studentNumber);
-      final bNumber = int.tryParse(b.studentNumber);
+    result.sort(
+      (a, b) {
+        final aNumber = int.tryParse(a.studentNumber);
 
-      if (aNumber != null && bNumber != null) {
-        return aNumber.compareTo(bNumber);
-      }
+        final bNumber = int.tryParse(b.studentNumber);
 
-      return a.studentNumber.compareTo(b.studentNumber);
-    });
+        if (aNumber != null && bNumber != null) {
+          return aNumber.compareTo(
+            bNumber,
+          );
+        }
+
+        return a.studentNumber.compareTo(
+          b.studentNumber,
+        );
+      },
+    );
 
     return result;
   }
 
-  List<List<dynamic>> _parse(String source) {
+  String _prefer(
+    String? preferred,
+    String fallback,
+  ) {
+    if (preferred != null && preferred.trim().isNotEmpty) {
+      return preferred.trim();
+    }
+
+    return fallback.trim();
+  }
+
+  List<List<dynamic>> _parse(
+    String source,
+  ) {
     final normalized = source
         .replaceFirst('\uFEFF', '')
         .replaceAll('\r\n', '\n')
@@ -111,7 +143,11 @@ class AcademicSequenceCsvService {
       return {};
     }
 
-    final headers = rows.first.map((e) => e.toString().trim()).toList();
+    final headers = rows.first
+        .map(
+          (e) => e.toString().trim(),
+        )
+        .toList();
 
     final numberIndex = _findColumn(
       headers,
@@ -119,7 +155,8 @@ class AcademicSequenceCsvService {
         'NoStudents',
         'NoStudent',
         'رقم الطالب',
-        'رقم',
+        'رقم الطالب الوطني',
+        'الرقم',
       ],
     );
 
@@ -131,6 +168,7 @@ class AcademicSequenceCsvService {
       headers,
       const [
         'اسم الطالب',
+        'الاسم الأول',
         'الاسم',
         'firstName',
         'FirstName',
@@ -142,9 +180,46 @@ class AcademicSequenceCsvService {
       const [
         'كنية الطالب',
         'الكنية',
+        'اللقب',
         'lastName',
         'LastName',
         'surname',
+      ],
+    );
+
+    final fatherNameIndex = _findColumn(
+      headers,
+      const [
+        'اسم الأب',
+        'اسم الاب',
+        'الأب',
+        'fatherName',
+        'FatherName',
+        'father_name',
+      ],
+    );
+
+    final birthPlaceIndex = _findColumn(
+      headers,
+      const [
+        'مكان الولادة',
+        'مكان التولد',
+        'مكان الميلاد',
+        'birthPlace',
+        'BirthPlace',
+        'birth_place',
+      ],
+    );
+
+    final birthDateIndex = _findColumn(
+      headers,
+      const [
+        'تاريخ الولادة',
+        'تاريخ التولد',
+        'تاريخ الميلاد',
+        'birthDate',
+        'BirthDate',
+        'birth_date',
       ],
     );
 
@@ -152,6 +227,7 @@ class AcademicSequenceCsvService {
       headers,
       const [
         'الصف',
+        'المرحلة',
         'grade',
         'grade_level',
       ],
@@ -168,17 +244,44 @@ class AcademicSequenceCsvService {
     final result = <String, Map<String, String>>{};
 
     for (final row in rows.skip(1)) {
-      final number = _value(row, numberIndex);
+      final number = _value(
+        row,
+        numberIndex,
+      );
 
       if (number.isEmpty) {
         continue;
       }
 
       result[number] = {
-        'firstName': _value(row, firstNameIndex),
-        'lastName': _value(row, lastNameIndex),
-        'grade': _value(row, gradeIndex),
-        'section': _value(row, sectionIndex),
+        'firstName': _value(
+          row,
+          firstNameIndex,
+        ),
+        'lastName': _value(
+          row,
+          lastNameIndex,
+        ),
+        'fatherName': _value(
+          row,
+          fatherNameIndex,
+        ),
+        'birthPlace': _value(
+          row,
+          birthPlaceIndex,
+        ),
+        'birthDate': _value(
+          row,
+          birthDateIndex,
+        ),
+        'grade': _value(
+          row,
+          gradeIndex,
+        ),
+        'section': _value(
+          row,
+          sectionIndex,
+        ),
       };
     }
 
@@ -188,7 +291,11 @@ class AcademicSequenceCsvService {
   Map<String, _HistoryStudent> _buildHistoryIndex(
     List<List<dynamic>> rows,
   ) {
-    final headers = rows.first.map((e) => e.toString().trim()).toList();
+    final headers = rows.first
+        .map(
+          (e) => e.toString().trim(),
+        )
+        .toList();
 
     final numberIndex = _findColumn(
       headers,
@@ -196,13 +303,21 @@ class AcademicSequenceCsvService {
         'NoStudents',
         'NoStudent',
         'رقم الطالب',
+        'الرقم',
       ],
     );
+
+    if (numberIndex == -1) {
+      throw Exception(
+        'لم يتم العثور على رقم الطالب في ملف النتائج.',
+      );
+    }
 
     final firstNameIndex = _findColumn(
       headers,
       const [
         'اسم الطالب',
+        'الاسم الأول',
         'الاسم',
       ],
     );
@@ -212,6 +327,34 @@ class AcademicSequenceCsvService {
       const [
         'كنية الطالب',
         'الكنية',
+        'اللقب',
+      ],
+    );
+
+    final fatherNameIndex = _findColumn(
+      headers,
+      const [
+        'اسم الأب',
+        'اسم الاب',
+        'الأب',
+      ],
+    );
+
+    final birthPlaceIndex = _findColumn(
+      headers,
+      const [
+        'مكان الولادة',
+        'مكان التولد',
+        'مكان الميلاد',
+      ],
+    );
+
+    final birthDateIndex = _findColumn(
+      headers,
+      const [
+        'تاريخ الولادة',
+        'تاريخ التولد',
+        'تاريخ الميلاد',
       ],
     );
 
@@ -229,32 +372,31 @@ class AcademicSequenceCsvService {
       ],
     );
 
-    if (numberIndex == -1) {
-      throw Exception(
-        'لم يتم العثور على عمود NoStudents في ملف النتائج الدراسية.',
-      );
-    }
-
     final yearColumns = <int, String>{};
 
     for (var i = 0; i < headers.length; i++) {
       final header = headers[i];
 
-      if (RegExp(r'^\d{4}-\d{4}$').hasMatch(header)) {
+      if (RegExp(
+        r'^\d{4}-\d{4}$',
+      ).hasMatch(header)) {
         yearColumns[i] = header;
       }
     }
 
     if (yearColumns.isEmpty) {
       throw Exception(
-        'لم يتم العثور على أعمدة السنوات الدراسية.',
+        'لم يتم العثور على السنوات الدراسية.',
       );
     }
 
     final result = <String, _HistoryStudent>{};
 
     for (final row in rows.skip(1)) {
-      final number = _value(row, numberIndex);
+      final number = _value(
+        row,
+        numberIndex,
+      );
 
       if (number.isEmpty) {
         continue;
@@ -263,7 +405,10 @@ class AcademicSequenceCsvService {
       final records = <AcademicYearRecord>[];
 
       for (final entry in yearColumns.entries) {
-        final raw = _value(row, entry.key);
+        final raw = _value(
+          row,
+          entry.key,
+        );
 
         if (raw.isEmpty) {
           continue;
@@ -274,7 +419,9 @@ class AcademicSequenceCsvService {
         records.add(
           AcademicYearRecord(
             academicYear: entry.value,
-            grade: parsed.grade,
+            grade: _gradeName(
+              parsed.grade,
+            ),
             status: parsed.status,
             rawValue: raw,
           ),
@@ -283,10 +430,36 @@ class AcademicSequenceCsvService {
 
       result[number] = _HistoryStudent(
         studentNumber: number,
-        firstName: _value(row, firstNameIndex),
-        lastName: _value(row, lastNameIndex),
-        currentGrade: _value(row, gradeIndex),
-        section: _value(row, sectionIndex),
+        firstName: _value(
+          row,
+          firstNameIndex,
+        ),
+        lastName: _value(
+          row,
+          lastNameIndex,
+        ),
+        fatherName: _value(
+          row,
+          fatherNameIndex,
+        ),
+        birthPlace: _value(
+          row,
+          birthPlaceIndex,
+        ),
+        birthDate: _value(
+          row,
+          birthDateIndex,
+        ),
+        currentGrade: _gradeName(
+          _value(
+            row,
+            gradeIndex,
+          ),
+        ),
+        section: _value(
+          row,
+          sectionIndex,
+        ),
         records: records,
       );
     }
@@ -307,9 +480,53 @@ class AcademicSequenceCsvService {
     }
 
     return (
-      status: value.substring(0, separatorIndex).trim(),
-      grade: value.substring(separatorIndex + 1).trim(),
+      status: value
+          .substring(
+            0,
+            separatorIndex,
+          )
+          .trim(),
+      grade: value
+          .substring(
+            separatorIndex + 1,
+          )
+          .trim(),
     );
+  }
+
+  String _gradeName(
+    String value,
+  ) {
+    switch (value.trim()) {
+      case '7':
+      case 'السابع':
+        return 'السابع';
+
+      case '8':
+      case 'الثامن':
+        return 'الثامن';
+
+      case '9':
+      case 'التاسع':
+        return 'التاسع';
+
+      case '10':
+      case 'العاشر':
+        return 'العاشر';
+
+      case '11':
+      case 'الحادي عشر':
+        return 'الحادي عشر';
+
+      case '12':
+      case 'الثاني عشر':
+      case 'البكالوريا':
+      case 'الباكلوريا':
+        return 'الباكلوريا';
+
+      default:
+        return value.trim();
+    }
   }
 
   int _findColumn(
@@ -346,6 +563,9 @@ class _HistoryStudent {
   final String studentNumber;
   final String firstName;
   final String lastName;
+  final String fatherName;
+  final String birthPlace;
+  final String birthDate;
   final String currentGrade;
   final String section;
   final List<AcademicYearRecord> records;
@@ -354,6 +574,9 @@ class _HistoryStudent {
     required this.studentNumber,
     required this.firstName,
     required this.lastName,
+    required this.fatherName,
+    required this.birthPlace,
+    required this.birthDate,
     required this.currentGrade,
     required this.section,
     required this.records,
